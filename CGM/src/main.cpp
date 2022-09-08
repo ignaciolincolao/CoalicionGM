@@ -4,8 +4,8 @@
 #include <nlohmann/json.hpp> //json
 #include <string> //string
 #include <fstream> //ifstream
-#include <boost/geometry.hpp>
-#include <boost/geometry/algorithms/convex_hull.hpp> //convex hull
+//#include <boost/geometry.hpp>
+//#include <boost/geometry/algorithms/convex_hull.hpp> //convex hull
 
 using namespace std;
 using json = nlohmann::json;
@@ -170,11 +170,11 @@ int main()
     /////////////////////////////////////////////////////////////
     /////// Fin poblacion inicial
     ////////////////////////////////////////////////////////////
-    for (size_t i = 0; i < quorum; i++)
+    /*for (size_t i = 0; i < quorum; i++)
     {
         cout << coalicion[i] << ",";
     }
-    cout << endl << fitness << endl;
+    cout << endl << fitness << endl;*/
     // Calculo Centroide de Coalicion
     float* centroide=(float*)malloc(2*sizeof(float));
     centroide[0] = 0;
@@ -187,8 +187,26 @@ int main()
     centroide[0] = centroide[0]/quorum;
     centroide[1] = centroide[1]/quorum;
 
-    cout << centroide[0] << " " << centroide[1] << endl;
+    //cout << centroide[0] << " " << centroide[1] << endl;
 
+    float* vecDis = (float*)malloc(n * sizeof(float));
+    for (size_t i = 0; i < n; i++)
+    {
+        vecDis[i] = dis_euc(centroide[0], centroide[1], matPos[i][0], matPos[i][1]);
+    }
+
+    int* CGM = (int*)malloc(quorum * sizeof(int));
+    float fitnessCGM;
+
+    minDistEdge(CGM, vecDis, n, quorum);
+    sort_bubble(CGM, quorum);
+    fitnessCGM = eval_sol(CGM, matDis, quorum);
+
+    for (size_t i = 0; i < quorum; i++)
+    {
+        cout << CGM[i] << ",";
+    }
+    cout << endl << fitnessCGM << endl;
     //calculo Convex hull
     //boost::geometry::algorithms::convex_hull
 }
