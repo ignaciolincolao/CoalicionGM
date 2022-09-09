@@ -100,7 +100,7 @@ float dis_euc(float x1, float y1, float x2, float y2)
 }
 struct Point
 {
-    float x, y;
+    float x, y, pos;
 };
 float orientation(Point p, Point q, Point r)
 {
@@ -163,6 +163,10 @@ void convexHull(Point points[], int n)
     cout << "Y:" << endl;
     for (int i = 0; i < hull.size(); i++)
         cout << hull[i].y << ",";
+    cout << endl;
+    cout << "Pos:" << endl;
+    for (int i = 0; i < hull.size(); i++)
+        cout << hull[i].pos << ",";
     cout << endl;
 }
 
@@ -282,6 +286,7 @@ int main()
         //Pts.push_back(Point());
         Pts[i].x = matPos[CGM[i]][0];
         Pts[i].y = matPos[CGM[i]][1];
+        Pts[i].pos = CGM[i];
     }
     int size = sizeof(Pts) / sizeof(Pts[0]);
     convexHull(Pts, size);
