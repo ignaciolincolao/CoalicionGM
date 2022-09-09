@@ -100,7 +100,8 @@ float dis_euc(float x1, float y1, float x2, float y2)
 }
 struct Point
 {
-    float x, y, pos;
+    float x, y;
+    int pos;
 };
 float orientation(Point p, Point q, Point r)
 {
@@ -112,14 +113,12 @@ float orientation(Point p, Point q, Point r)
 }
 
 // Prints convex hull of a set of n points.
-void convexHull(Point points[], int n)
+vector<Point> convexHull(Point points[], int n)
 {
     // There must be at least 3 points
-    if (n < 3) return;
-
     // Initialize Result
     vector<Point> hull;
-
+    if (n < 3) return hull;
     // Find the leftmost point
     int l = 0;
     for (int i = 1; i < n; i++)
@@ -156,18 +155,7 @@ void convexHull(Point points[], int n)
 
     } while (p != l);  // While we don't come to first point
     // Print Result
-    cout << "X:" << endl;
-    for (int i = 0; i < hull.size(); i++)
-        cout << hull[i].x <<",";
-    cout << endl;
-    cout << "Y:" << endl;
-    for (int i = 0; i < hull.size(); i++)
-        cout << hull[i].y << ",";
-    cout << endl;
-    cout << "Pos:" << endl;
-    for (int i = 0; i < hull.size(); i++)
-        cout << hull[i].pos << ",";
-    cout << endl;
+    return hull;
 }
 
 
@@ -289,5 +277,47 @@ int main()
         Pts[i].pos = CGM[i];
     }
     int size = sizeof(Pts) / sizeof(Pts[0]);
-    convexHull(Pts, size);
-}
+    auto hull=convexHull(Pts, size);
+    /*cout << "X:" << endl;
+    for (int i = 0; i < hull.size(); i++)
+        cout << hull[i].x << ",";
+    cout << endl;
+    cout << "Y:" << endl;
+    for (int i = 0; i < hull.size(); i++)
+        cout << hull[i].y << ",";
+    cout << endl;
+    cout << "Pos:" << endl;
+    for (int i = 0; i < hull.size(); i++)
+        cout << hull[i].pos << ",";
+    cout << endl;*/
+    bool* mallaCGM = (bool*)malloc(n * sizeof(bool));
+    for (size_t i = 0; i < n; i++)
+    {
+        mallaCGM[i] = 0;
+    }
+    for (size_t i = 0; i < quorum; i++)
+    {
+        mallaCGM[CGM[i]] = 1;
+    }
+    int* notCGM = (int*)malloc((n - quorum) * sizeof(int));
+    int cont = 0;
+    for (size_t i = 0; i < n; i++)
+    {
+        if (!mallaCGM[i]) {
+            notCGM[cont] = i;
+            cont++;
+        }
+    }
+    for (size_t i = 0; i < (n-quorum); i++)
+    {
+        cout << notCGM[i] << ",";
+    }
+    cout << endl << cont;
+    /*
+    1-Calcular cual de los elementos del convex hull estan mas lejos del centroide de la coalicion 
+    2-A cada punto que no forme la coalicion calcular la sumatoria de las distancias a todos los puntos que si la forman
+    3-Ordenar los que esten mas cerca a los que esten mas lejos
+    4-Tomar x puntos que esten mas cerca y probar intercambiando esos x puntos con el punto mas lejano del centroide y ver si mejora
+    5-Si no mejora con ninguno, tomar el segundo punto mas lejano del centroide y repetir proceso
+    */
+-}

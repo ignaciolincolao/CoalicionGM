@@ -9,8 +9,6 @@ include_directories(
 	${PROJECT_SOURCE_DIR}/include
 )
 
-find_package(Boost 1.75)
-
 file(GLOB all_SRCS
 	"${PROJECT_SOURCE_DIR}/src/*.cpp"
 	"${PROJECT_SOURCE_DIR}/src/*.c"
@@ -29,5 +27,4 @@ FetchContent_Declare(json URL https://github.com/nlohmann/json/releases/download
 FetchContent_MakeAvailable(json)
 
 target_link_libraries(CGM PRIVATE nlohmann_json::nlohmann_json)
-
 
