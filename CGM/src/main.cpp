@@ -161,7 +161,9 @@ vector<Point> convexHull(Point points[], int n)
     // Print Result
     return hull;
 }
-
+bool VectDist_Sort(VectDis const& lvd, VectDis const& rvd) {
+    return lvd.Distancia < rvd.Distancia;
+}
 
 // ConvexHull obtenido de https://www.geeksforgeeks.org/convex-hull-set-1-jarviss-algorithm-or-wrapping/
 int main()
@@ -347,9 +349,10 @@ int main()
         vectDisCGM[i].index = notCGM[i];
         sum = 0;
     }
-    /*for (int i = 0; i < (n - quorum); i++) {
+    
+    for (int i = 0; i < (n - quorum); i++) {
         cout << "Distancia=" << vectDisCGM[i].Distancia << " " << "Indice=" << vectDisCGM[i].index << endl;
-    }*/
+    }
     /*float sum = 0;
     for (int i = 0; i < (n - quorum); i++) {
         for (size_t j = 0; j < quorum; j++)
@@ -362,10 +365,15 @@ int main()
     for (int i = 0; i < (n - quorum); i++) {
         cout << "i=" << i << ",dis=" << vectDisCGM[i] << endl;
     }*/
+    std::sort(vectDisCGM.begin(), vectDisCGM.end(), &VectDist_Sort);
+    cout << "- - - - - - - - - - - - - - - - " << endl;
+    for (int i = 0; i < (n - quorum); i++) {
+        cout << "Distancia=" << vectDisCGM[i].Distancia << " " << "Indice=" << vectDisCGM[i].index << endl;
+    }
     /*
     --1-Calcular cual de los elementos del convex hull estan mas lejos del centroide de la coalicion 
     --2-Para cada punto que no forme la coalicion calcular la sumatoria de las distancias a todos los puntos que si la forman
-    3-Ordenar los que esten mas cerca a los que esten mas lejos
+    --3-Ordenar los que esten mas cerca a los que esten mas lejos
     4-Tomar 1 punto que este mas cerca y probar intercambiando ese punto con el punto mas lejano del centroide y ver si mejora
     5-Si no mejora con ninguno, tomar el segundo punto mas lejano del centroide y repetir proceso
     */
