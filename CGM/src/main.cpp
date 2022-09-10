@@ -103,6 +103,10 @@ struct Point
     float x, y;
     int pos;
 };
+struct VectDis {
+    float Distancia;
+    int index;
+};
 float orientation(Point p, Point q, Point r)
 {
     float val = (q.y - p.y) * (r.x - q.x) -
@@ -308,16 +312,61 @@ int main()
             cont++;
         }
     }
-    for (size_t i = 0; i < (n-quorum); i++)
+    /*for (size_t i = 0; i < (n - quorum); i++)
     {
         cout << notCGM[i] << ",";
     }
-    cout << endl << cont;
+    cout << endl << cont;*/
+    float* matDisHull = (float*)malloc(hull.size() * sizeof(float));
+    for (size_t i = 0; i < hull.size(); i++) {
+        matDisHull[i] = dis_euc(hull[i].x, hull[i].y, centroide[0], centroide[1]);
+    }
+    //Mas adelante cuando repitamos proceso dejar esto en una funcion con vectores
+    float maxDis=matDisHull[0];
+    int maxDisPos = 0;
+    //Esto podria ser reemplazado por una libreria o funcion
+    for (int i = 0; i < hull.size(); i++) {
+        if (matDisHull[i] > maxDis) {
+            maxDis=matDisHull[i];
+            maxDisPos = i;
+        }
+    }
+    cout << "DisMinima:" << maxDis << endl;
+    cout << "PosMin:" << maxDisPos << endl;
+    //Ver si esto se puede resolver mediante una libreria o funcion
+    //float* vectDisCGM = (float*)malloc((n - quorum) * sizeof(float));
+    vector<VectDis> vectDisCGM;
+    float sum = 0;
+    for (int i = 0; i < (n - quorum); i++) {
+        for (size_t j = 0; j < quorum; j++)
+        {
+            sum = sum + dis_euc(matPos[notCGM[i]][0], matPos[notCGM[i]][1], matPos[CGM[j]][0], matPos[CGM[j]][1]);
+        }
+        vectDisCGM.push_back(VectDis());
+        vectDisCGM[i].Distancia=sum;
+        vectDisCGM[i].index = notCGM[i];
+        sum = 0;
+    }
+    /*for (int i = 0; i < (n - quorum); i++) {
+        cout << "Distancia=" << vectDisCGM[i].Distancia << " " << "Indice=" << vectDisCGM[i].index << endl;
+    }*/
+    /*float sum = 0;
+    for (int i = 0; i < (n - quorum); i++) {
+        for (size_t j = 0; j < quorum; j++)
+        {
+            sum= sum+dis_euc(matPos[notCGM[i]][0], matPos[notCGM[i]][1],matPos[CGM[j]][0],matPos[CGM[j]][1]);
+        }
+        vectDisCGM[notCGM[i]] = sum;
+        sum = 0;
+    }
+    for (int i = 0; i < (n - quorum); i++) {
+        cout << "i=" << i << ",dis=" << vectDisCGM[i] << endl;
+    }*/
     /*
-    1-Calcular cual de los elementos del convex hull estan mas lejos del centroide de la coalicion 
-    2-A cada punto que no forme la coalicion calcular la sumatoria de las distancias a todos los puntos que si la forman
+    --1-Calcular cual de los elementos del convex hull estan mas lejos del centroide de la coalicion 
+    --2-Para cada punto que no forme la coalicion calcular la sumatoria de las distancias a todos los puntos que si la forman
     3-Ordenar los que esten mas cerca a los que esten mas lejos
-    4-Tomar x puntos que esten mas cerca y probar intercambiando esos x puntos con el punto mas lejano del centroide y ver si mejora
+    4-Tomar 1 punto que este mas cerca y probar intercambiando ese punto con el punto mas lejano del centroide y ver si mejora
     5-Si no mejora con ninguno, tomar el segundo punto mas lejano del centroide y repetir proceso
     */
--}
+}
