@@ -350,9 +350,9 @@ int main()
         sum = 0;
     }
     
-    for (int i = 0; i < (n - quorum); i++) {
+    /*for (int i = 0; i < (n - quorum); i++) {
         cout << "Distancia=" << vectDisCGM[i].Distancia << " " << "Indice=" << vectDisCGM[i].index << endl;
-    }
+    }*/
     /*float sum = 0;
     for (int i = 0; i < (n - quorum); i++) {
         for (size_t j = 0; j < quorum; j++)
@@ -366,10 +366,10 @@ int main()
         cout << "i=" << i << ",dis=" << vectDisCGM[i] << endl;
     }*/
     std::sort(vectDisCGM.begin(), vectDisCGM.end(), &VectDist_Sort);
-    cout << "- - - - - - - - - - - - - - - - " << endl;
+    /*cout << "- - - - - - - - - - - - - - - - " << endl;
     for (int i = 0; i < (n - quorum); i++) {
         cout << "Distancia=" << vectDisCGM[i].Distancia << " " << "Indice=" << vectDisCGM[i].index << endl;
-    }
+    }*/
     /*
     --1-Calcular cual de los elementos del convex hull estan mas lejos del centroide de la coalicion 
     --2-Para cada punto que no forme la coalicion calcular la sumatoria de las distancias a todos los puntos que si la forman
@@ -377,4 +377,18 @@ int main()
     4-Tomar 1 punto que este mas cerca y probar intercambiando ese punto con el punto mas lejano del centroide y ver si mejora
     5-Si no mejora con ninguno, tomar el segundo punto mas lejano del centroide y repetir proceso
     */
+    int cantidad = 50;
+    float fitnessNuevo;
+    for (size_t i = 0; i < hull.size(); i++)
+    {
+        for (size_t j = 0; j < (vectDisCGM.size()-cantidad); j++)
+        {
+            CGM[hull[i].pos] = vectDisCGM[i].index;
+            fitnessNuevo = eval_sol(CGM, matDis, quorum);
+            if (fitnessNuevo < fitnessCGM) 
+            {
+                cout << fitnessNuevo;
+            }
+        }
+    }
 }
