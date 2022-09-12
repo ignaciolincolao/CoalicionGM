@@ -3,10 +3,10 @@
 #include <iostream> //general
 #include <nlohmann/json.hpp> //json
 #include <string> //string
+#include <cstring>
 #include <fstream> //ifstream
 #include <algorithm>
 #include <vector>
-#include <stack>
 using namespace std;
 using json = nlohmann::json;
 float minDist(float d[], bool genSet[], int n)
@@ -102,6 +102,7 @@ struct Point
 {
     float x, y;
     int pos;
+    int index;
 };
 struct VectDis {
     float Distancia;
@@ -242,7 +243,30 @@ int main()
     }
     cout << endl << fitness << endl;*/
     // Calculo Centroide de Coalicion
-    float* centroide=(float*)malloc(2*sizeof(float));
+    bool posMejora = true;
+    //inicio de punteros
+    float* centroide = (float*)malloc(2 * sizeof(float));
+    float* vecDis = (float*)malloc(n * sizeof(float));
+    int* CGM = (int*)malloc(quorum * sizeof(int));
+    bool* mallaCGM = (bool*)malloc(n * sizeof(bool));
+    int* notCGM = (int*)malloc((n - quorum) * sizeof(int));
+    int* CGP = (int*)malloc(quorum * sizeof(int));
+    //inicio vectores
+    vector<VectDis> vectDisCGM;
+    //inicio variables
+    float fitnessCGM;
+    int size;
+    int cont;
+    float maxDis;
+    int maxDisPos;
+    float sum = 0;
+    int cantidad = 50;
+    float fitnessNuevo;
+    float copiaFit;
+
+    // Cambiar 214 por tamaño Quorum
+    Point Pts[214];
+    
     centroide[0] = 0;
     centroide[1] = 0;
     for (size_t i = 0; i < quorum; i++)
@@ -250,19 +274,15 @@ int main()
         centroide[0] = centroide[0] + matPos[coalicion[i]][0];
         centroide[1] = centroide[1] + matPos[coalicion[i]][1];
     }
-    centroide[0] = centroide[0]/quorum;
-    centroide[1] = centroide[1]/quorum;
+    centroide[0] = centroide[0] / quorum;
+    centroide[1] = centroide[1] / quorum;
 
     //cout << centroide[0] << " " << centroide[1] << endl;
 
-    float* vecDis = (float*)malloc(n * sizeof(float));
     for (size_t i = 0; i < n; i++)
     {
         vecDis[i] = dis_euc(centroide[0], centroide[1], matPos[i][0], matPos[i][1]);
     }
-
-    int* CGM = (int*)malloc(quorum * sizeof(int));
-    float fitnessCGM;
 
     minDistEdge(CGM, vecDis, n, quorum);
     sort_bubble(CGM, quorum);
@@ -273,17 +293,17 @@ int main()
         cout << CGM[i] << ",";
     }
     cout << endl << fitnessCGM << endl;
-    // Cambiar 214 por tamaño Quorum
-    Point Pts[214];
+
     for (size_t i = 0; i < quorum; i++)
     {
         //Pts.push_back(Point());
         Pts[i].x = matPos[CGM[i]][0];
         Pts[i].y = matPos[CGM[i]][1];
         Pts[i].pos = CGM[i];
+        Pts[i].index = i;
     }
-    int size = sizeof(Pts) / sizeof(Pts[0]);
-    auto hull=convexHull(Pts, size);
+    size = sizeof(Pts) / sizeof(Pts[0]);
+    auto hull = convexHull(Pts, size);
     /*cout << "X:" << endl;
     for (int i = 0; i < hull.size(); i++)
         cout << hull[i].x << ",";
@@ -296,7 +316,6 @@ int main()
     for (int i = 0; i < hull.size(); i++)
         cout << hull[i].pos << ",";
     cout << endl;*/
-    bool* mallaCGM = (bool*)malloc(n * sizeof(bool));
     for (size_t i = 0; i < n; i++)
     {
         mallaCGM[i] = 0;
@@ -305,8 +324,7 @@ int main()
     {
         mallaCGM[CGM[i]] = 1;
     }
-    int* notCGM = (int*)malloc((n - quorum) * sizeof(int));
-    int cont = 0;
+    cont = 0;
     for (size_t i = 0; i < n; i++)
     {
         if (!mallaCGM[i]) {
@@ -319,17 +337,18 @@ int main()
         cout << notCGM[i] << ",";
     }
     cout << endl << cont;*/
-    float* matDisHull = (float*)malloc(hull.size() * sizeof(float));
+    float* matDisHull = nullptr;
+    matDisHull = (float*)malloc(hull.size() * sizeof(float));
     for (size_t i = 0; i < hull.size(); i++) {
         matDisHull[i] = dis_euc(hull[i].x, hull[i].y, centroide[0], centroide[1]);
     }
     //Mas adelante cuando repitamos proceso dejar esto en una funcion con vectores
-    float maxDis=matDisHull[0];
-    int maxDisPos = 0;
+    maxDis = matDisHull[0];
+    maxDisPos = 0;
     //Esto podria ser reemplazado por una libreria o funcion
     for (int i = 0; i < hull.size(); i++) {
         if (matDisHull[i] > maxDis) {
-            maxDis=matDisHull[i];
+            maxDis = matDisHull[i];
             maxDisPos = i;
         }
     }
@@ -337,19 +356,18 @@ int main()
     cout << "PosMin:" << maxDisPos << endl;
     //Ver si esto se puede resolver mediante una libreria o funcion
     //float* vectDisCGM = (float*)malloc((n - quorum) * sizeof(float));
-    vector<VectDis> vectDisCGM;
-    float sum = 0;
+    vectDisCGM.clear();
     for (int i = 0; i < (n - quorum); i++) {
         for (size_t j = 0; j < quorum; j++)
         {
             sum = sum + dis_euc(matPos[notCGM[i]][0], matPos[notCGM[i]][1], matPos[CGM[j]][0], matPos[CGM[j]][1]);
         }
         vectDisCGM.push_back(VectDis());
-        vectDisCGM[i].Distancia=sum;
+        vectDisCGM[i].Distancia = sum;
         vectDisCGM[i].index = notCGM[i];
         sum = 0;
     }
-    
+
     /*for (int i = 0; i < (n - quorum); i++) {
         cout << "Distancia=" << vectDisCGM[i].Distancia << " " << "Indice=" << vectDisCGM[i].index << endl;
     }*/
@@ -371,24 +389,49 @@ int main()
         cout << "Distancia=" << vectDisCGM[i].Distancia << " " << "Indice=" << vectDisCGM[i].index << endl;
     }*/
     /*
-    --1-Calcular cual de los elementos del convex hull estan mas lejos del centroide de la coalicion 
+    --1-Calcular cual de los elementos del convex hull estan mas lejos del centroide de la coalicion
     --2-Para cada punto que no forme la coalicion calcular la sumatoria de las distancias a todos los puntos que si la forman
     --3-Ordenar los que esten mas cerca a los que esten mas lejos
     4-Tomar 1 punto que este mas cerca y probar intercambiando ese punto con el punto mas lejano del centroide y ver si mejora
     5-Si no mejora con ninguno, tomar el segundo punto mas lejano del centroide y repetir proceso
     */
-    int cantidad = 50;
-    float fitnessNuevo;
-    for (size_t i = 0; i < hull.size(); i++)
+    copiaFit = fitnessCGM;
+    while (posMejora)
     {
-        for (size_t j = 0; j < (vectDisCGM.size()-cantidad); j++)
+        for (size_t i = 0; i < hull.size(); i++)
         {
-            CGM[hull[i].pos] = vectDisCGM[i].index;
-            fitnessNuevo = eval_sol(CGM, matDis, quorum);
-            if (fitnessNuevo < fitnessCGM) 
+            for (size_t j = 0; j < (vectDisCGM.size() - cantidad); j++)
             {
-                cout << fitnessNuevo;
+                memcpy(CGP, CGM, sizeof(int) * quorum);
+                CGP[hull[i].index] = vectDisCGM[j].index;
+                sort_bubble(CGP, quorum);
+                fitnessNuevo = eval_sol(CGP, matDis, quorum);
+                /*cout << "cambio en: " << hull[i].index << endl;
+                cout << fitnessNuevo << endl;
+                for (size_t k = 0; k < quorum; k++)
+                {
+                    cout << CGP[k] << ",";
+                }*/
+
+                if (fitnessNuevo < fitnessCGM)
+                {
+                    cout << fitnessNuevo << endl;
+                    fitnessCGM = fitnessNuevo;
+                    CGM[hull[i].index] = vectDisCGM[j].index;
+                }
             }
         }
+        for (size_t k = 0; k < quorum; k++)
+        {
+            cout << CGM[k] << ",";
+        }
+        cout << endl;
+        cout << "fit: " << fitnessCGM << "--" << copiaFit << endl;
+        if (fitnessCGM == copiaFit)
+        {
+            posMejora = false;
+        }
+        copiaFit = fitnessCGM;
     }
+    
 }
