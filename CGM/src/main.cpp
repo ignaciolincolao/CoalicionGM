@@ -1,4 +1,4 @@
-// CGM.cpp: define el punto de entrada de la aplicación.
+// coalicion.cpp: define el punto de entrada de la aplicación.
 //
 #include <iostream> //general
 #include <nlohmann/json.hpp> //json
@@ -102,11 +102,19 @@ struct Point
 {
     float x, y;
     int pos;
-    int index;
+    int indice;
 };
 struct VectDis {
     float Distancia;
-    int index;
+    int pos;
+};
+struct pMejora {
+    float fitness;
+    int indice;
+};
+struct DisHull {
+    float Distancia;
+    int indiceHull;
 };
 float orientation(Point p, Point q, Point r)
 {
@@ -166,6 +174,23 @@ bool VectDist_Sort(VectDis const& lvd, VectDis const& rvd) {
     return lvd.Distancia < rvd.Distancia;
 }
 
+bool vecMejora_Sort(pMejora const& lvd, pMejora const& rvd) {
+    return lvd.fitness < rvd.fitness;
+}
+bool vecDisHull_Sort(DisHull const& lvd, DisHull const& rvd) {
+    return lvd.Distancia > rvd.Distancia;
+}
+void calcularCentroide(float* centroide,float** matPos,int* coalicion,int quorum) {
+    centroide[0] = 0;
+    centroide[1] = 0;
+    for (size_t i = 0; i < quorum; i++)
+    {
+        centroide[0] = centroide[0] + matPos[coalicion[i]][0];
+        centroide[1] = centroide[1] + matPos[coalicion[i]][1];
+    }
+    centroide[0] = centroide[0] / quorum;
+    centroide[1] = centroide[1] / quorum;
+}
 // ConvexHull obtenido de https://www.geeksforgeeks.org/convex-hull-set-1-jarviss-algorithm-or-wrapping/
 int main()
 {
@@ -230,10 +255,10 @@ int main()
     sort_BubbleIndex(fitnessInitIndex, fitnessInit, n, n);
     //sacar el mejor
     int* coalicion = (int*)malloc(quorum * sizeof(int));
-    float fitness;
+    float fitnessCGM;
 
     memcpy(coalicion, congresistas[fitnessInitIndex[0]],sizeof(int)*quorum);
-    fitness = fitnessInit[fitnessInitIndex[0]];
+    fitnessCGM = fitnessInit[fitnessInitIndex[0]];
     /////////////////////////////////////////////////////////////
     /////// Fin poblacion inicial
     ////////////////////////////////////////////////////////////
@@ -243,18 +268,17 @@ int main()
     }
     cout << endl << fitness << endl;*/
     // Calculo Centroide de Coalicion
-    bool posMejora = true;
+    bool posibilidadMejora = true;
     //inicio de punteros
     float* centroide = (float*)malloc(2 * sizeof(float));
     float* vecDis = (float*)malloc(n * sizeof(float));
-    int* CGM = (int*)malloc(quorum * sizeof(int));
     bool* mallaCGM = (bool*)malloc(n * sizeof(bool));
     int* notCGM = (int*)malloc((n - quorum) * sizeof(int));
     int* CGP = (int*)malloc(quorum * sizeof(int));
     //inicio vectores
     vector<VectDis> vectDisCGM;
+    vector<pMejora> vecMejora;
     //inicio variables
-    float fitnessCGM;
     int size;
     int cont;
     float maxDis;
@@ -263,66 +287,33 @@ int main()
     int cantidad = 50;
     float fitnessNuevo;
     float copiaFit;
-
+    //float* matDisHull;
     // Cambiar 214 por tamaño Quorum
     Point Pts[214];
     
-    centroide[0] = 0;
-    centroide[1] = 0;
+    calcularCentroide(centroide, matPos, coalicion, quorum);
     for (size_t i = 0; i < quorum; i++)
     {
-        centroide[0] = centroide[0] + matPos[coalicion[i]][0];
-        centroide[1] = centroide[1] + matPos[coalicion[i]][1];
-    }
-    centroide[0] = centroide[0] / quorum;
-    centroide[1] = centroide[1] / quorum;
-
-    //cout << centroide[0] << " " << centroide[1] << endl;
-
-    for (size_t i = 0; i < n; i++)
-    {
-        vecDis[i] = dis_euc(centroide[0], centroide[1], matPos[i][0], matPos[i][1]);
-    }
-
-    minDistEdge(CGM, vecDis, n, quorum);
-    sort_bubble(CGM, quorum);
-    fitnessCGM = eval_sol(CGM, matDis, quorum);
-
-    for (size_t i = 0; i < quorum; i++)
-    {
-        cout << CGM[i] << ",";
+        cout << coalicion[i] << ",";
     }
     cout << endl << fitnessCGM << endl;
 
     for (size_t i = 0; i < quorum; i++)
     {
-        //Pts.push_back(Point());
-        Pts[i].x = matPos[CGM[i]][0];
-        Pts[i].y = matPos[CGM[i]][1];
-        Pts[i].pos = CGM[i];
-        Pts[i].index = i;
+        Pts[i].x = matPos[coalicion[i]][0];
+        Pts[i].y = matPos[coalicion[i]][1];
+        Pts[i].pos = coalicion[i];
+        Pts[i].indice = i;
     }
     size = sizeof(Pts) / sizeof(Pts[0]);
     auto hull = convexHull(Pts, size);
-    /*cout << "X:" << endl;
-    for (int i = 0; i < hull.size(); i++)
-        cout << hull[i].x << ",";
-    cout << endl;
-    cout << "Y:" << endl;
-    for (int i = 0; i < hull.size(); i++)
-        cout << hull[i].y << ",";
-    cout << endl;
-    cout << "Pos:" << endl;
-    for (int i = 0; i < hull.size(); i++)
-        cout << hull[i].pos << ",";
-    cout << endl;*/
     for (size_t i = 0; i < n; i++)
     {
         mallaCGM[i] = 0;
     }
     for (size_t i = 0; i < quorum; i++)
     {
-        mallaCGM[CGM[i]] = 1;
+        mallaCGM[coalicion[i]] = 1;
     }
     cont = 0;
     for (size_t i = 0; i < n; i++)
@@ -332,62 +323,30 @@ int main()
             cont++;
         }
     }
-    /*for (size_t i = 0; i < (n - quorum); i++)
-    {
-        cout << notCGM[i] << ",";
-    }
-    cout << endl << cont;*/
-    float* matDisHull = nullptr;
-    matDisHull = (float*)malloc(hull.size() * sizeof(float));
+    //matDisHull = nullptr;
+    //matDisHull = (float*)malloc(hull.size() * sizeof(float));
+    vector<DisHull> vecDisHull;
     for (size_t i = 0; i < hull.size(); i++) {
-        matDisHull[i] = dis_euc(hull[i].x, hull[i].y, centroide[0], centroide[1]);
+        //matDisHull[i] = dis_euc(hull[i].x, hull[i].y, centroide[0], centroide[1]);
+        vecDisHull.push_back(DisHull());
+        vecDisHull[i].Distancia = dis_euc(hull[i].x, hull[i].y, centroide[0], centroide[1]);
+        vecDisHull[i].indiceHull = i;
     }
-    //Mas adelante cuando repitamos proceso dejar esto en una funcion con vectores
-    maxDis = matDisHull[0];
-    maxDisPos = 0;
-    //Esto podria ser reemplazado por una libreria o funcion
-    for (int i = 0; i < hull.size(); i++) {
-        if (matDisHull[i] > maxDis) {
-            maxDis = matDisHull[i];
-            maxDisPos = i;
-        }
-    }
-    cout << "DisMinima:" << maxDis << endl;
-    cout << "PosMin:" << maxDisPos << endl;
-    //Ver si esto se puede resolver mediante una libreria o funcion
-    //float* vectDisCGM = (float*)malloc((n - quorum) * sizeof(float));
+    sort(vecDisHull.begin(), vecDisHull.end(), &vecDisHull_Sort);
     vectDisCGM.clear();
     for (int i = 0; i < (n - quorum); i++) {
         for (size_t j = 0; j < quorum; j++)
         {
-            sum = sum + dis_euc(matPos[notCGM[i]][0], matPos[notCGM[i]][1], matPos[CGM[j]][0], matPos[CGM[j]][1]);
+            sum = sum + dis_euc(matPos[notCGM[i]][0], matPos[notCGM[i]][1], matPos[coalicion[j]][0], matPos[coalicion[j]][1]);
+            //sum = sum + matDis[notCGM[i]][coalicion[j]];
         }
         vectDisCGM.push_back(VectDis());
         vectDisCGM[i].Distancia = sum;
-        vectDisCGM[i].index = notCGM[i];
+        vectDisCGM[i].pos = notCGM[i];
         sum = 0;
     }
 
-    /*for (int i = 0; i < (n - quorum); i++) {
-        cout << "Distancia=" << vectDisCGM[i].Distancia << " " << "Indice=" << vectDisCGM[i].index << endl;
-    }*/
-    /*float sum = 0;
-    for (int i = 0; i < (n - quorum); i++) {
-        for (size_t j = 0; j < quorum; j++)
-        {
-            sum= sum+dis_euc(matPos[notCGM[i]][0], matPos[notCGM[i]][1],matPos[CGM[j]][0],matPos[CGM[j]][1]);
-        }
-        vectDisCGM[notCGM[i]] = sum;
-        sum = 0;
-    }
-    for (int i = 0; i < (n - quorum); i++) {
-        cout << "i=" << i << ",dis=" << vectDisCGM[i] << endl;
-    }*/
-    std::sort(vectDisCGM.begin(), vectDisCGM.end(), &VectDist_Sort);
-    /*cout << "- - - - - - - - - - - - - - - - " << endl;
-    for (int i = 0; i < (n - quorum); i++) {
-        cout << "Distancia=" << vectDisCGM[i].Distancia << " " << "Indice=" << vectDisCGM[i].index << endl;
-    }*/
+    sort(vectDisCGM.begin(), vectDisCGM.end(), &VectDist_Sort);
     /*
     --1-Calcular cual de los elementos del convex hull estan mas lejos del centroide de la coalicion
     --2-Para cada punto que no forme la coalicion calcular la sumatoria de las distancias a todos los puntos que si la forman
@@ -396,42 +355,106 @@ int main()
     5-Si no mejora con ninguno, tomar el segundo punto mas lejano del centroide y repetir proceso
     */
     copiaFit = fitnessCGM;
-    while (posMejora)
+    int contPM;
+    bool mejora = false;
+    while (posibilidadMejora)
     {
+        contPM = 0;
         for (size_t i = 0; i < hull.size(); i++)
         {
+            vecMejora.clear();
             for (size_t j = 0; j < (vectDisCGM.size() - cantidad); j++)
             {
-                memcpy(CGP, CGM, sizeof(int) * quorum);
-                CGP[hull[i].index] = vectDisCGM[j].index;
+                memcpy(CGP, coalicion, sizeof(int) * quorum);
+                CGP[hull[vecDisHull[i].indiceHull].indice] = vectDisCGM[j].pos;
                 sort_bubble(CGP, quorum);
                 fitnessNuevo = eval_sol(CGP, matDis, quorum);
-                /*cout << "cambio en: " << hull[i].index << endl;
-                cout << fitnessNuevo << endl;
-                for (size_t k = 0; k < quorum; k++)
-                {
-                    cout << CGP[k] << ",";
-                }*/
-
                 if (fitnessNuevo < fitnessCGM)
                 {
-                    cout << fitnessNuevo << endl;
+                    vecMejora.push_back(pMejora());
+                    vecMejora[contPM].fitness = fitnessNuevo;
+                    vecMejora[contPM].indice = j;
+                    cout << endl << fitnessNuevo << endl;
                     fitnessCGM = fitnessNuevo;
-                    CGM[hull[i].index] = vectDisCGM[j].index;
+                    mejora = true;
                 }
             }
+            sort(vecMejora.begin(), vecMejora.end(), &vecMejora_Sort);
+            if (mejora)
+            {
+                coalicion[hull[vecDisHull[i].indiceHull].indice] = vectDisCGM[vecMejora[0].indice].pos;
+                sort_bubble(coalicion, quorum);
+                fitnessCGM = eval_sol(coalicion, matDis, quorum);
+                mejora = false;
+                break;
+            }
         }
-        for (size_t k = 0; k < quorum; k++)
-        {
-            cout << CGM[k] << ",";
-        }
-        cout << endl;
-        cout << "fit: " << fitnessCGM << "--" << copiaFit << endl;
         if (fitnessCGM == copiaFit)
         {
-            posMejora = false;
+            posibilidadMejora = false;
         }
-        copiaFit = fitnessCGM;
+        else {
+            copiaFit = fitnessCGM;
+            //nuevo convex hull
+            calcularCentroide(centroide, matPos, coalicion, quorum);
+            for (size_t i = 0; i < quorum; i++)
+            {
+                Pts[i].x = matPos[coalicion[i]][0];
+                Pts[i].y = matPos[coalicion[i]][1];
+                Pts[i].pos = coalicion[i];
+                Pts[i].indice = i;
+            }
+            size = sizeof(Pts) / sizeof(Pts[0]);
+            auto hull = convexHull(Pts, size);
+            for (size_t i = 0; i < n; i++)
+            {
+                mallaCGM[i] = 0;
+            }
+            for (size_t i = 0; i < quorum; i++)
+            {
+                mallaCGM[coalicion[i]] = 1;
+            }
+            cont = 0;
+            for (size_t i = 0; i < n; i++)
+            {
+                if (!mallaCGM[i]) {
+                    notCGM[cont] = i;
+                    cont++;
+                }
+            }
+            vecDisHull.clear();
+            for (size_t i = 0; i < hull.size(); i++) {
+                //matDisHull[i] = dis_euc(hull[i].x, hull[i].y, centroide[0], centroide[1]);
+                vecDisHull.push_back(DisHull());
+                vecDisHull[i].Distancia = dis_euc(hull[i].x, hull[i].y, centroide[0], centroide[1]);
+                vecDisHull[i].indiceHull = i;
+            }
+            sort(vecDisHull.begin(), vecDisHull.end(), &vecDisHull_Sort);
+            vectDisCGM.clear();
+            for (int i = 0; i < (n - quorum); i++) {
+                for (size_t j = 0; j < quorum; j++)
+                {
+                    //sum = sum + matDis[notCGM[i]][coalicion[j]];
+                    sum = sum + dis_euc(matPos[notCGM[i]][0], matPos[notCGM[i]][1], matPos[coalicion[j]][0], matPos[coalicion[j]][1]);
+                }
+                vectDisCGM.push_back(VectDis());
+                vectDisCGM[i].Distancia = sum;
+                vectDisCGM[i].pos = notCGM[i];
+                sum = 0;
+            }
+            sort(vectDisCGM.begin(), vectDisCGM.end(), &VectDist_Sort);
+        }
     }
-    
+    cout << "Algoritmo terminado" << endl;
+    //cout << "Fitness Final:" << fitnessCGM<<endl;
+    cout << "Coalicion:";
+    for (size_t i = 0; i < quorum; i++)
+    {
+        cout << coalicion[i] << ",";
+    }
+    cout << endl;
+    cout << "Hull:" << endl;
+    for (auto punto : hull) {
+        cout << punto.pos << ",";
+    }
 }
