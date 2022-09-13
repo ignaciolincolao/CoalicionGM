@@ -9,10 +9,7 @@
 #include <vector>
 using namespace std;
 using json = nlohmann::json;
-double alpha;
-double alpha;
-double alpha;
-double alpha;
+double alpha = 0.1;//revisar
 double minDist(double d[], bool genSet[], int n)
 {
     double min = FLT_MAX, min_index;
@@ -110,6 +107,7 @@ struct Point
 };
 struct VectDis {
     double Distancia;
+    double disCentroide;
     int pos;
 };
 struct pMejora {
@@ -239,12 +237,6 @@ int main(int argc, char* argv[])
         }
     }
 
-    cout << "Matriz de distancia" << endl;
-    for (size_t j = 0; j < n; j++){
-            cout <<fixed<< matDis[0][j]<<setprecision(9) << ",";
-    }
-    cout << endl;
-    cout << endl;
     //inicializacion de quorum
     int quorum = trunc(n / 2) + 1;
 
@@ -301,7 +293,6 @@ int main(int argc, char* argv[])
     double maxDis;
     int maxDisPos;
     double sum = 0;
-    int cantidad = 50;
     double fitnessNuevo;
     double copiaFit;
     //double* matDisHull;
@@ -309,11 +300,6 @@ int main(int argc, char* argv[])
     Point Pts[214];
     
     calcularCentroide(centroide, matPos, coalicion, quorum);
-    for (size_t i = 0; i < quorum; i++)
-    {
-        cout << coalicion[i] << ",";
-    }
-    cout << endl << fitnessCGM << endl;
 
     for (size_t i = 0; i < quorum; i++)
     {
@@ -360,6 +346,7 @@ int main(int argc, char* argv[])
         vectDisCGM.push_back(VectDis());
         vectDisCGM[i].Distancia = sum;
         vectDisCGM[i].pos = notCGM[i];
+        vectDisCGM[i].disCentroide = dis_euc(matPos[notCGM[i]][0], matPos[notCGM[i]][1], centroide[0], centroide[1]);
         sum = 0;
     }
 
@@ -371,22 +358,23 @@ int main(int argc, char* argv[])
     4-Tomar 1 punto que este mas cerca y probar intercambiando ese punto con el punto mas lejano del centroide y ver si mejora
     5-Si no mejora con ninguno, tomar el segundo punto mas lejano del centroide y repetir proceso
     */
-    /*cout << "Hull:" << endl;
 
-    for (size_t i = 0; i < hull.size(); i++) {
-        //cout << punto.pos << ",";
-        cout << hull[vecDisHull[i].indiceHull].pos << ",";
-    }*/
+    double limite = (vecDisHull[0].Distancia) * (alpha + 1);
     copiaFit = fitnessCGM;
     int contPM;
     bool mejora = false;
+    int cantidad;
     while (posibilidadMejora)
     {
+        for (size_t i = 0; i < vectDisCGM.size(); i++)
+        {
+            if (vectDisCGM[i].disCentroide < limite) cantidad++;
+        }
         contPM = 0;
         for (size_t i = 0; i < hull.size(); i++)
         {
             vecMejora.clear();
-            for (size_t j = 0; j < (vectDisCGM.size() - cantidad); j++)
+            for (size_t j = 0; j < (cantidad); j++)
             {
                 memcpy(CGP, coalicion, sizeof(int) * quorum);
                 CGP[hull[vecDisHull[i].indiceHull].indice] = vectDisCGM[j].pos;
@@ -397,7 +385,6 @@ int main(int argc, char* argv[])
                     vecMejora.push_back(pMejora());
                     vecMejora[contPM].fitness = fitnessNuevo;
                     vecMejora[contPM].indice = j;
-                    cout << endl << fitnessNuevo << endl;
                     fitnessCGM = fitnessNuevo;
                     mejora = true;
                 }
@@ -463,23 +450,19 @@ int main(int argc, char* argv[])
                 vectDisCGM.push_back(VectDis());
                 vectDisCGM[i].Distancia = sum;
                 vectDisCGM[i].pos = notCGM[i];
+                vectDisCGM[i].disCentroide = dis_euc(matPos[notCGM[i]][0], matPos[notCGM[i]][1], centroide[0], centroide[1]);
                 sum = 0;
             }
             sort(vectDisCGM.begin(), vectDisCGM.end(), &VectDist_Sort);
-            //cout << "Hull:" << endl;
 
-            /*for (size_t i = 0; i < hull.siWze(); i++) {
-                //cout << punto.pos << ",";
-                cout << hull[vecDisHull[i].indiceHull].pos << ",";
-            }*/
         }
     }
     cout << "Algoritmo terminado" << endl;
-    //cout << "Fitness Final:" <<fixed<< fitnessCGM<< setprecision(9)<<endl;
-    //cout << "Coalicion:";
-    /*for (size_t i = 0; i < quorum; i++)
+    cout << "Fitness Final:" <<fixed<< fitnessCGM<< setprecision(9)<<endl;
+    cout << "Coalicion:";
+    for (size_t i = 0; i < quorum; i++)
     {
         cout << coalicion[i] << ",";
     }
-    cout << endl;*/
+    cout << endl;
 }
