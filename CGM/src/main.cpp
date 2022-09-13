@@ -7,9 +7,12 @@
 #include <fstream> //ifstream
 #include <algorithm>
 #include <vector>
+#include <chrono>
 using namespace std;
 using json = nlohmann::json;
-double alpha = 0.1;//revisar
+double alpha = 0.99;//revisar
+double delta = 0.9; //0.95 es el limite
+double delta2 = -1;
 double minDist(double d[], bool genSet[], int n)
 {
     double min = FLT_MAX, min_index;
@@ -199,6 +202,8 @@ int main(int argc, char* argv[])
     if (argc > 1)
     {
         alpha = stoi(argv[1]);
+        delta= stoi(argv[2]);
+        delta2= stoi(argv[3]);
     }
     //cargar archivo de votaciones
     ifstream archivo("votacion.json");
@@ -241,7 +246,8 @@ int main(int argc, char* argv[])
     int quorum = trunc(n / 2) + 1;
 
     
-
+    //Calculo Tiempo Inicial
+    auto tInicial = chrono::high_resolution_clock::now();
     /////////////////////////////////////
     ////// Ordenamiento algoritmo B
     /////////////////////////////////////
@@ -359,17 +365,18 @@ int main(int argc, char* argv[])
     5-Si no mejora con ninguno, tomar el segundo punto mas lejano del centroide y repetir proceso
     */
 
-    double limite = (vecDisHull[0].Distancia) * (alpha + 1);
+    //double limite = (vecDisHull[0].Distancia) * (alpha);
+
+    double limite;
     copiaFit = fitnessCGM;
     int contPM;
     bool mejora = false;
-    int cantidad;
+    int cantidad=0;
     while (posibilidadMejora)
     {
-        for (size_t i = 0; i < vectDisCGM.size(); i++)
-        {
-            if (vectDisCGM[i].disCentroide < limite) cantidad++;
-        }
+        delta2 = delta2 + 1;
+        limite = vecDisHull[0].Distancia * alpha * pow(delta, delta2);
+        for (size_t i = 0; i < vectDisCGM.size(); i++) if (vectDisCGM[i].disCentroide < limite) cantidad++;
         contPM = 0;
         for (size_t i = 0; i < hull.size(); i++)
         {
@@ -382,6 +389,22 @@ int main(int argc, char* argv[])
                 fitnessNuevo = eval_sol(CGP, matDis, quorum);
                 if (fitnessNuevo < fitnessCGM)
                 {
+                    cout << endl;
+                    cout << "Cantidad de puntos tomados:" << cantidad << endl;
+                    cout << "Fitness Anterior:" << fixed << fitnessCGM << setprecision(9) << endl;
+                    cout << "Fitness Recalculado:" << fixed << fitnessNuevo << setprecision(9) << endl;
+                    cout << "Coalicion Anterior:";
+                    for (size_t i = 0; i < quorum; i++)
+                    {
+                        cout << coalicion[i] << ",";
+                    }
+                    cout << endl;
+                    cout << "Coalicion Recalculado:";
+                    for (size_t i = 0; i < quorum; i++)
+                    {
+                        cout << CGP[i] << ",";
+                    }
+                    cout << endl;
                     vecMejora.push_back(pMejora());
                     vecMejora[contPM].fitness = fitnessNuevo;
                     vecMejora[contPM].indice = j;
@@ -457,8 +480,13 @@ int main(int argc, char* argv[])
 
         }
     }
-    cout << "Algoritmo terminado" << endl;
-    cout << "Fitness Final:" <<fixed<< fitnessCGM<< setprecision(9)<<endl;
+    auto tFinal = chrono::high_resolution_clock::now();
+    double tTomado = chrono::duration_cast<chrono::nanoseconds>(tFinal - tInicial).count();
+    tTomado *= 1e-9;
+
+    cout << "Algoritmo terminado - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -" << endl;
+    cout << "Tiempo total:" << fixed << tTomado << setprecision(9) << endl;
+    cout << "Fitness Final:" << fixed << fitnessCGM << setprecision(9) << endl;
     cout << "Coalicion:";
     for (size_t i = 0; i < quorum; i++)
     {
