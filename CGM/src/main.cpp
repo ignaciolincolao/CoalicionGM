@@ -215,7 +215,6 @@ int main(int argc, char* argv[])
 
     //numero de parlamentario
     int n = data["rollcalls"][0]["votes"].size();
-
     //creacion de la matriz de distancia
     double** matDis = (double**)malloc(n * sizeof(double*));
     for (size_t i = 0; i < n; i++)
@@ -303,7 +302,8 @@ int main(int argc, char* argv[])
     double copiaFit;
     //double* matDisHull;
     // Cambiar 214 por tamaño Quorum
-    Point Pts[214];
+    struct Point* Pts = (Point*)malloc(sizeof(struct Point) *quorum);
+    //Point Pts[quorum];
     
     calcularCentroide(centroide, matPos, coalicion, quorum);
 
@@ -314,8 +314,9 @@ int main(int argc, char* argv[])
         Pts[i].pos = coalicion[i];
         Pts[i].indice = i;
     }
-    size = sizeof(Pts) / sizeof(Pts[0]);
-    auto hull = convexHull(Pts, size);
+    //size = sizeof(Pts) / sizeof(Pts[0]);
+    //auto hull = convexHull(Pts, size);
+    auto hull = convexHull(Pts, quorum);
     for (size_t i = 0; i < n; i++)
     {
         mallaCGM[i] = 0;
@@ -430,6 +431,8 @@ int main(int argc, char* argv[])
             copiaFit = fitnessCGM;
             //nuevo convex hull
             calcularCentroide(centroide, matPos, coalicion, quorum);
+            Pts = nullptr;
+            struct Point* Pts = (Point*)malloc(sizeof(struct Point) * quorum);
             for (size_t i = 0; i < quorum; i++)
             {
                 Pts[i].x = matPos[coalicion[i]][0];
@@ -437,8 +440,9 @@ int main(int argc, char* argv[])
                 Pts[i].pos = coalicion[i];
                 Pts[i].indice = i;
             }
-            size = sizeof(Pts) / sizeof(Pts[0]);
-            auto hull = convexHull(Pts, size);
+            //size = sizeof(Pts) / sizeof(Pts[0]);
+            //auto hull = convexHull(Pts, size);
+            auto hull = convexHull(Pts, quorum);
             for (size_t i = 0; i < n; i++)
             {
                 mallaCGM[i] = 0;
