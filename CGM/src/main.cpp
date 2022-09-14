@@ -197,6 +197,21 @@ void calcularCentroide(double* centroide,double** matPos,int* coalicion,int quor
     centroide[1] = centroide[1] / quorum;
 }
 // ConvexHull obtenido de https://www.geeksforgeeks.org/convex-hull-set-1-jarviss-algorithm-or-wrapping/
+
+//Sort
+void swapDouble(VectDis* a, VectDis* b) {
+    VectDis temp = *a;
+    *a = *b;
+    *b = temp;
+}
+
+void selectionSortVectDis(VectDis array[], int size) {
+    for (int step = 0; step < size - 1; step++) {
+        int min_idx = step;
+        for (int i = step + 1; i < size; i++) if (array[i].Distancia < array[min_idx].Distancia) min_idx = i;
+        swapDouble(&array[min_idx], &array[step]);
+    }
+}
 int main(int argc, char* argv[])
 {
     if (argc > 1)
@@ -290,7 +305,7 @@ int main(int argc, char* argv[])
     int* notCGM = (int*)malloc((n - quorum) * sizeof(int));
     int* CGP = (int*)malloc(quorum * sizeof(int));
     //inicio vectores
-    vector<VectDis> vectDisCGM;
+    struct VectDis* vectDisCGM=(VectDis*)malloc(sizeof(struct VectDis)*(n-quorum));
     vector<pMejora> vecMejora;
     //inicio variables
     int size;
@@ -343,21 +358,23 @@ int main(int argc, char* argv[])
         vecDisHull[i].indiceHull = i;
     }
     sort(vecDisHull.begin(), vecDisHull.end(), &vecDisHull_Sort);
-    vectDisCGM.clear();
+    //vectDisCGM = nullptr;
+    //struct VectDis* vectDisCGM = (VectDis*)malloc(sizeof(struct VectDis) * (n - quorum));
     for (int i = 0; i < (n - quorum); i++) {
         for (size_t j = 0; j < quorum; j++)
         {
             sum = sum + dis_euc(matPos[notCGM[i]][0], matPos[notCGM[i]][1], matPos[coalicion[j]][0], matPos[coalicion[j]][1]);
             //sum = sum + matDis[notCGM[i]][coalicion[j]];
         }
-        vectDisCGM.push_back(VectDis());
+        //vectDisCGM.push_back(VectDis());
         vectDisCGM[i].Distancia = sum;
         vectDisCGM[i].pos = notCGM[i];
         vectDisCGM[i].disCentroide = dis_euc(matPos[notCGM[i]][0], matPos[notCGM[i]][1], centroide[0], centroide[1]);
         sum = 0;
     }
 
-    sort(vectDisCGM.begin(), vectDisCGM.end(), &VectDist_Sort);
+    //sort(vectDisCGM, vectDisCGM.end(), &VectDist_Sort);
+    selectionSortVectDis(vectDisCGM, (n - quorum));
     /*
     --1-Calcular cual de los elementos del convex hull estan mas lejos del centroide de la coalicion
     --2-Para cada punto que no forme la coalicion calcular la sumatoria de las distancias a todos los puntos que si la forman
@@ -377,7 +394,7 @@ int main(int argc, char* argv[])
     {
         delta2 = delta2 + 1;
         limite = vecDisHull[0].Distancia * alpha * pow(delta, delta2);
-        for (size_t i = 0; i < vectDisCGM.size(); i++) if (vectDisCGM[i].disCentroide < limite) cantidad++;
+        for (size_t i = 0; i < (n-quorum); i++) if (vectDisCGM[i].disCentroide < limite) cantidad++;
         contPM = 0;
         for (size_t i = 0; i < hull.size(); i++)
         {
@@ -432,7 +449,7 @@ int main(int argc, char* argv[])
             //nuevo convex hull
             calcularCentroide(centroide, matPos, coalicion, quorum);
             Pts = nullptr;
-            struct Point* Pts = (Point*)malloc(sizeof(struct Point) * quorum);
+            Pts = (Point*)malloc(sizeof(struct Point) * quorum);
             for (size_t i = 0; i < quorum; i++)
             {
                 Pts[i].x = matPos[coalicion[i]][0];
@@ -467,20 +484,21 @@ int main(int argc, char* argv[])
                 vecDisHull[i].indiceHull = i;
             }
             sort(vecDisHull.begin(), vecDisHull.end(), &vecDisHull_Sort);
-            vectDisCGM.clear();
+            vectDisCGM = nullptr;
+            //struct VectDis* vectDisCGM = (VectDis*)malloc(sizeof(struct VectDis) * (n - quorum));
+            vectDisCGM = (VectDis*)malloc(sizeof(struct VectDis) * (n - quorum));
             for (int i = 0; i < (n - quorum); i++) {
                 for (size_t j = 0; j < quorum; j++)
                 {
-                    //sum = sum + matDis[notCGM[i]][coalicion[j]];
                     sum = sum + dis_euc(matPos[notCGM[i]][0], matPos[notCGM[i]][1], matPos[coalicion[j]][0], matPos[coalicion[j]][1]);
                 }
-                vectDisCGM.push_back(VectDis());
                 vectDisCGM[i].Distancia = sum;
                 vectDisCGM[i].pos = notCGM[i];
                 vectDisCGM[i].disCentroide = dis_euc(matPos[notCGM[i]][0], matPos[notCGM[i]][1], centroide[0], centroide[1]);
                 sum = 0;
             }
-            sort(vectDisCGM.begin(), vectDisCGM.end(), &VectDist_Sort);
+            //sort(vectDisCGM.begin(), vectDisCGM.end(), &VectDist_Sort);
+            selectionSortVectDis(vectDisCGM, (n - quorum));
 
         }
     }
