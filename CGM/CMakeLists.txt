@@ -12,13 +12,18 @@ include_directories(
 file(GLOB all_SRCS
 	"${PROJECT_SOURCE_DIR}/src/*.cpp"
 	"${PROJECT_SOURCE_DIR}/src/*.c"
+	"${PROJECT_SOURCE_DIR}/src/*.h"
+)
+file(GLOB all_DATA
+	"${PROJECT_SOURCE_DIR}/data/*.json"
 )
 # Agregue un origen al ejecutable de este proyecto.
-add_executable (CGM ${all_SRCS} votacion.json)
+add_executable (CGM ${all_SRCS} ${all_DATA})
 set_target_properties(CGM PROPERTIES LINKER_LANGUAGE CXX)
 
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/votacion.json
-	${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
+file(COPY ${all_DATA} DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+#configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/votacion.json
+	#${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
 # TODO: Agregue pruebas y destinos de instalación si es necesario.
 
 include(FetchContent)
