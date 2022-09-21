@@ -269,13 +269,23 @@ int main(int argc, char *argv[])
     double time_taken = chrono::duration_cast<chrono::nanoseconds>(final_time - initial_time).count();
     time_taken *= 1e-9;
     // Print the results
-    cout << "Algoritmo terminado - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -" << endl;
-    cout << "Tiempo total:" << fixed << time_taken << setprecision(9) << endl;
-    cout << "Fitness Final:" << fixed << fitness_minimum_winning_coalition << setprecision(9) << endl;
-    cout << "Coalicion:";
+    cout << "Finished algorithm - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -" << endl;
+    cout << "Time lapsed:" << fixed << time_taken << setprecision(9) << endl;
+    cout << "Fitness:" << fixed << fitness_minimum_winning_coalition << setprecision(9) << endl;
+    cout << "Coalition:";
     for (size_t i = 0; i < quorum; i++)
     {
         cout << coalition[i] << ",";
     }
+    // Write to file
+    results << "{\n\"time_lapsed\":" << fixed << time_taken << setprecision(15);
+    results<< ",\n\"fitness\":" << fixed << fitness_minimum_winning_coalition << setprecision(15)<<",\n\"coalition\":[";
+    for (size_t j = 0; j < quorum; j++)
+    {
+        results << coalition[j]<<",";
+        if (j < (quorum - 1)) results << coalition[j]<<",";
+        else results << coalition[j];
+    }
+    results << "]\n}";
     cout << endl;
 }
