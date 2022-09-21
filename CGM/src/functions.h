@@ -1,15 +1,17 @@
 #include <vector>
 using namespace std;
-double minimum_distance(double d[], bool congressman_set[], int n)
+// Function to search the minimum distance between a point that does not belong to the coalition and a array of distances and return the index of this
+double minimum_distance(double distances[], bool congressman_set[], int n)
 {
-    double min = FLT_MAX, min_index;
+    double min = DBL_MAX, min_index;
     for (int v = 0; v < n; v++)
-        if (congressman_set[v] == false && d[v] < min)
-            min = d[v], min_index = v;
+        if (congressman_set[v] == false && distances[v] < min)
+            min = distances[v], min_index = v;
     return min_index;
 }
-
-double evaluate_solution(int* position, double** mat, int length) {
+// function to evaluate the solutions and return the fitness value
+double evaluate_solution(int *position, double **mat, int length)
+{
     double sum = 0;
     for (size_t i = 0; i <= (length - 2); i++)
     {
@@ -22,8 +24,8 @@ double evaluate_solution(int* position, double** mat, int length) {
     return sum;
 }
 
-//funcion para ordenar un arreglo de menor a mayor
-void sort_bubble(int* array, int length)
+// Function to sort an array using bubble method
+void sort_bubble(int *array, int length)
 {
     int temp = 0;
     for (size_t i = 0; i < length; i++)
@@ -43,11 +45,12 @@ void sort_bubble(int* array, int length)
             break;
     }
 }
-
-void sort_bubble_index(int* index_array, double* arrayDist, int n, int quorum) {
+// Function to sort an array using bubble method in the index
+void sort_bubble_index(int *index_array, double *arrayDist, int n, int quorum)
+{
     int temp = 0;
-    //int order_index[n];
-    int* order_index = new int[n];
+    // int order_index[n];
+    int *order_index = new int[n];
     for (size_t i = 0; i < n; i++)
         order_index[i] = i;
 
@@ -69,50 +72,61 @@ void sort_bubble_index(int* index_array, double* arrayDist, int n, int quorum) {
     }
     memcpy(index_array, order_index, sizeof(int) * quorum);
 }
-
-void minDistEdge(int* index_array, double* arrayDist, int n, int quorum)
+// Function to create a initials solutions
+void minimum_distance_edge(int *index_array, double *arrayDist, int n, int quorum)
 {
-    bool* congressman_set = new bool[n];
-    for (size_t i = 0; i < n; i++) {
+    bool *congressman_set = new bool[n];
+    for (size_t i = 0; i < n; i++)
+    {
         congressman_set[i] = false;
     }
-    for (size_t i = 0; i < quorum; i++) {
+    for (size_t i = 0; i < quorum; i++)
+    {
         int u = minimum_distance(arrayDist, congressman_set, n);
         congressman_set[u] = true;
         index_array[i] = u;
     }
 }
-
+// Function to calculate the distance between two points
 double eucledian_distance(double x1, double y1, double x2, double y2)
 {
     double calculation = pow(pow((x2 - x1), 2) + pow((y2 - y1), 2), 1 / (double)2);
     return calculation;
 }
+// Structure to store the information of the points
 struct Point
 {
     double x, y;
     int position;
     int index;
 };
-struct Distance_vector {
+// Structure to store the distance respect to a centroid
+struct Distance_vector
+{
     double distance;
     double centroid_distance;
     int position;
 };
-struct Possible_improvement {
+// Structure to store the information of the points are possible to be selected to change
+struct Possible_improvement
+{
     double fitness;
     int index;
 };
-struct DisHull {
+// Structure to store the information of the convex hull
+struct Distance_hull
+{
     double distance;
     int hull_index;
 };
+// Function to check the orientation
 double orientation(Point p, Point q, Point r)
 {
     double value = (q.y - p.y) * (r.x - q.x) -
-        (q.x - p.x) * (r.y - q.y);
+                   (q.x - p.x) * (r.y - q.y);
 
-    if (value == 0) return 0;  // collinear
+    if (value == 0)
+        return 0;               // collinear
     return (value > 0) ? 1 : 2; // clock or counterclock wise
 }
 
@@ -122,7 +136,8 @@ vector<Point> convexHull(Point points[], int n)
     // There must be at least 3 points
     // Initialize Result
     vector<Point> hull;
-    if (n < 3) return hull;
+    if (n < 3)
+        return hull;
     // Find the leftmost point
     int l = 0;
     for (int i = 1; i < n; i++)
@@ -157,61 +172,76 @@ vector<Point> convexHull(Point points[], int n)
         // result 'hull'
         p = q;
 
-    } while (p != l);  // While we don't come to first point
+    } while (p != l); // While we don't come to first point
     // Print Result
     return hull;
 }
-bool VectDist_Sort(Distance_vector const& lvd, Distance_vector const& rvd) {
+// Function boolean to check if a vector of distances is sorted
+bool vector_distance_sort(Distance_vector const &lvd, Distance_vector const &rvd) // not used
+{
     return lvd.distance < rvd.distance;
 }
-
-bool vecMejora_Sort(Possible_improvement const& lvd, Possible_improvement const& rvd) {
+// Function boolean to check if a improvement vector is sorted
+bool vector_improvement_sort(Possible_improvement const &lvd, Possible_improvement const &rvd)
+{
     return lvd.fitness < rvd.fitness;
 }
-bool vector_distance_hull_sort(DisHull const& lvd, DisHull const& rvd) {
+bool vector_distance_hull_sort(Distance_hull const &lvd, Distance_hull const &rvd) // not used
+{
     return lvd.distance > rvd.distance;
 }
-void calculate_centroid(double* centroide, double** matPos, int* coalicion, int quorum) {
-    centroide[0] = 0;
-    centroide[1] = 0;
+// Function to calculate the centroid of a set of points
+void calculate_centroid(double *centroid, double **position_matrix, int *coalition, int quorum)
+{
+    centroid[0] = 0;
+    centroid[1] = 0;
     for (size_t i = 0; i < quorum; i++)
     {
-        centroide[0] = centroide[0] + matPos[coalicion[i]][0];
-        centroide[1] = centroide[1] + matPos[coalicion[i]][1];
+        centroid[0] = centroid[0] + position_matrix[coalition[i]][0];
+        centroid[1] = centroid[1] + position_matrix[coalition[i]][1];
     }
-    centroide[0] = centroide[0] / quorum;
-    centroide[1] = centroide[1] / quorum;
+    centroid[0] = centroid[0] / quorum;
+    centroid[1] = centroid[1] / quorum;
 }
-// ConvexHull obtenido de https://www.geeksforgeeks.org/convex-hull-set-1-jarviss-algorithm-or-wrapping/
 
-//Sort
-void swap_double(Distance_vector* a, Distance_vector* b) {
+// Function to do swap two elements
+void swap_double(Distance_vector *a, Distance_vector *b)
+{
     Distance_vector temp = *a;
     *a = *b;
     *b = temp;
 }
-
-void selection_sort_distance_vector(Distance_vector array[], int size) {
-    for (int step = 0; step < size - 1; step++) {
+// Funtion to sort a vector using double swap
+void selection_sort_distance_vector(Distance_vector array[], int size)
+{
+    for (int step = 0; step < size - 1; step++)
+    {
         int index_of_minimum = step;
-        for (int i = step + 1; i < size; i++) if (array[i].distance < array[index_of_minimum].distance) index_of_minimum = i;
+        for (int i = step + 1; i < size; i++)
+            if (array[i].distance < array[index_of_minimum].distance)
+                index_of_minimum = i;
         swap_double(&array[index_of_minimum], &array[step]);
     }
 }
-
-vector<DisHull> distance_of_hull_to_point(vector<Point> hull,double* centroid) {
-    vector<DisHull> vector_distance_hull;
-    for (size_t i = 0; i < hull.size(); i++) {
-        vector_distance_hull.push_back(DisHull());
+// Funtion to calculate the distance between a point and a convex hull
+vector<Distance_hull> distance_of_hull_to_point(vector<Point> hull, double *centroid)
+{
+    vector<Distance_hull> vector_distance_hull;
+    for (size_t i = 0; i < hull.size(); i++)
+    {
+        vector_distance_hull.push_back(Distance_hull());
         vector_distance_hull[i].distance = eucledian_distance(hull[i].x, hull[i].y, centroid[0], centroid[1]);
         vector_distance_hull[i].hull_index = i;
     }
     sort(vector_distance_hull.begin(), vector_distance_hull.end(), &vector_distance_hull_sort);
     return vector_distance_hull;
 }
-void distance_of_points_to_coalition(struct Distance_vector* distance_vector_minimum_winning_coalition,int* not_in_minimum_winning_coalition, int* coalition, double* centroid, double** position_matrix,int n, int quorum) {
+// Function to calculate the distance
+void distance_of_points_to_coalition(struct Distance_vector *distance_vector_minimum_winning_coalition, int *not_in_minimum_winning_coalition, int *coalition, double *centroid, double **position_matrix, int n, int quorum)
+{
     double sum = 0;
-    for (int i = 0; i < (n - quorum); i++) {
+    for (int i = 0; i < (n - quorum); i++)
+    {
         for (size_t j = 0; j < quorum; j++)
         {
             sum = sum + eucledian_distance(position_matrix[not_in_minimum_winning_coalition[i]][0], position_matrix[not_in_minimum_winning_coalition[i]][1], position_matrix[coalition[j]][0], position_matrix[coalition[j]][1]);

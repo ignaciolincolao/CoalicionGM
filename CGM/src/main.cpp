@@ -77,7 +77,7 @@ int main(int argc, char *argv[])
     // Creation of initial solutions
     for (int j = 0; j < n; j++)
     {
-        minDistEdge(congressmen[j], distance_matrix[j], n, quorum);
+        minimum_distance_edge(congressmen[j], distance_matrix[j], n, quorum);
         sort_bubble(congressmen[j], quorum);
         initial_fitness[j] = evaluate_solution(congressmen[j], distance_matrix, quorum);
     }
@@ -142,7 +142,7 @@ int main(int argc, char *argv[])
         }
     }
     // Calculate the distance vector of the points not in the best solution towards the convex hull
-    vector<DisHull> vector_distance_hull;
+    vector<Distance_hull> vector_distance_hull;
     vector_distance_hull = distance_of_hull_to_point(hull, centroid);
     distance_of_points_to_coalition(distance_vector_minimum_winning_coalition, not_in_minimum_winning_coalition, coalition, centroid, position_matrix, n, quorum);
     while (possibility_of_improvement)
@@ -200,7 +200,7 @@ int main(int argc, char *argv[])
                 }
             }
             // sort the improvement vector
-            sort(improvement_vector.begin(), improvement_vector.end(), &vecMejora_Sort);
+            sort(improvement_vector.begin(), improvement_vector.end(), &vector_improvement_sort);
             if (improvement)
             {
                 // A congressman from the convex hull is changed for one that is within the vector of possible improvement
