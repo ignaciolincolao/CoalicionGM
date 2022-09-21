@@ -111,7 +111,7 @@ int main(int argc, char *argv[])
     // Point Structure Initialization
     struct Point *Pts = (Point *)malloc(sizeof(struct Point) * quorum);
     // Calculate the centroid of the best solution
-    calcularCentroide(centroid, position_matrix, coalition, quorum);
+    calculate_centroid(centroid, position_matrix, coalition, quorum);
     // save the points of the best solution
     for (size_t i = 0; i < quorum; i++)
     {
@@ -224,7 +224,7 @@ int main(int argc, char *argv[])
             // save the fitness
             fitness_copy = fitness_minimum_winning_coalition;
             // Calculate the centroid
-            calcularCentroide(centroid, position_matrix, coalition, quorum);
+            calculate_centroid(centroid, position_matrix, coalition, quorum);
             // Initialize the points again
             Pts = nullptr;
             Pts = (Point *)malloc(sizeof(struct Point) * quorum);

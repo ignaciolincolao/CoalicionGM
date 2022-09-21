@@ -171,7 +171,7 @@ bool vecMejora_Sort(Possible_improvement const& lvd, Possible_improvement const&
 bool vector_distance_hull_sort(DisHull const& lvd, DisHull const& rvd) {
     return lvd.distance > rvd.distance;
 }
-void calcularCentroide(double* centroide, double** matPos, int* coalicion, int quorum) {
+void calculate_centroid(double* centroide, double** matPos, int* coalicion, int quorum) {
     centroide[0] = 0;
     centroide[1] = 0;
     for (size_t i = 0; i < quorum; i++)
