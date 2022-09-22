@@ -12,7 +12,7 @@ using namespace std;
 using json = nlohmann::json;
 
 // Default params
-double alpha = 1.1; //0.99
+double alpha = 1.1; // 0.99
 double delta = 0.9; // 0.95 its a limit
 double delta2 = -1;
 string votes = "votes.json";
@@ -73,7 +73,7 @@ int main(int argc, char *argv[])
     }
     // Initialization of the solutions
     vector<Solutions> initial_solutions;
-    // Creation of initial solutions
+    // Creation of the initial solutions and their respective fitness
     for (int j = 0; j < n; j++)
     {
         minimum_distance_edge(congressmen[j], distance_matrix[j], n, quorum);
@@ -98,6 +98,7 @@ int main(int argc, char *argv[])
     // Vector Initialization
     struct Distance_vector *distance_vector_minimum_winning_coalition = (Distance_vector *)malloc(sizeof(struct Distance_vector) * (n - quorum));
     vector<Possible_improvement> improvement_vector;
+    vector<Distance_hull> vector_distance_hull;
     // Variable initialization
     bool possibility_of_improvement = true;
     int counter;
@@ -105,10 +106,11 @@ int main(int argc, char *argv[])
     double new_fitness;
     double fitness_copy;
     double limit;
-    fitness_copy = fitness_minimum_winning_coalition;
     int counter_posibility_of_improvement;
     bool improvement = false;
     int number_of_points = 0;
+    // Save the initial fitness
+    fitness_copy = fitness_minimum_winning_coalition;
     // Point Structure Initialization
     struct Point *Pts = (Point *)malloc(sizeof(struct Point) * quorum);
     // Calculate the centroid of the best solution
@@ -143,8 +145,8 @@ int main(int argc, char *argv[])
         }
     }
     // Calculate the distance vector of the points not in the best solution towards the convex hull
-    vector<Distance_hull> vector_distance_hull;
     vector_distance_hull = distance_of_hull_to_point(hull, centroid);
+    // Calculate the distance vector of the points not in the best solution towards the best solution
     distance_of_points_to_coalition(distance_vector_minimum_winning_coalition, not_in_minimum_winning_coalition, coalition, centroid, position_matrix, n, quorum);
     while (possibility_of_improvement)
     {
@@ -158,7 +160,8 @@ int main(int argc, char *argv[])
             {
                 number_of_points++;
             }
-            else break;
+            else
+                break;
         }
 
         for (size_t i = 0; i < hull.size(); i++)
@@ -169,11 +172,12 @@ int main(int argc, char *argv[])
             improvement_vector.clear();
             for (size_t j = 0; j < number_of_points; j++)
             {
-                // Obtain the possible winning coalition
+                // Copy the coalition
                 memcpy(possible_winning_coalition, coalition, sizeof(int) * quorum);
+                // Obtain the all distances of the points in the coalition
                 possible_winning_coalition[hull[vector_distance_hull[i].hull_index].index] = distance_vector_minimum_winning_coalition[j].position;
                 // sort the possible winning coalition
-                sort(possible_winning_coalition, possible_winning_coalition + quorum,&array_sort);
+                sort(possible_winning_coalition, possible_winning_coalition + quorum, &array_sort);
                 // Calculate the fitness of the possible winning coalition
                 new_fitness = evaluate_solution(possible_winning_coalition, distance_matrix, quorum);
                 if (new_fitness < fitness_minimum_winning_coalition)
@@ -201,30 +205,36 @@ int main(int argc, char *argv[])
                     improvement_vector[counter_posibility_of_improvement].fitness = new_fitness;
                     // Save the position of the possible winning coalition
                     improvement_vector[counter_posibility_of_improvement].index = j;
+                    // Save the fitness of the new minimum winning coalition
                     fitness_minimum_winning_coalition = new_fitness;
+                    // Change the improvement flag
                     improvement = true;
+                    // Increase the counter of the improvement
                     counter_posibility_of_improvement++;
                 }
             }
-            // sort the improvement vector
+            // Sort the improvement vector
             sort(improvement_vector.begin(), improvement_vector.end(), &vector_improvement_sort);
             if (improvement)
             {
+                // Prints the position to be changed
                 cout << "Worst of hull: " << i + 1 << endl;
                 cout << "Best of out: " << improvement_vector[0].index + 1 << endl;
                 // A congressman from the convex hull is changed for one that is within the vector of possible improvement
                 coalition[hull[vector_distance_hull[i].hull_index].index] = distance_vector_minimum_winning_coalition[improvement_vector[0].index].position;
-                // sort the coalition
-                sort(coalition, coalition + quorum,&array_sort);
+                // Sort the coalition
+                sort(coalition, coalition + quorum, &array_sort);
                 // Calculate the new fitness
                 fitness_minimum_winning_coalition = evaluate_solution(coalition, distance_matrix, quorum);
                 // We get out of the loop
                 improvement = false;
+                // get out the "for" loop
                 break;
             }
         }
-        // if the fitness does not change, we get out of the loop
-        if (fitness_minimum_winning_coalition == fitness_copy) possibility_of_improvement = false;
+        // if the fitness does not change, we get out of the "while" loop
+        if (fitness_minimum_winning_coalition == fitness_copy)
+            possibility_of_improvement = false;
         else
         {
             // save the fitness
@@ -262,7 +272,7 @@ int main(int argc, char *argv[])
                     counter++;
                 }
             }
-            // Clear the distance vector and calculate again
+            // Clear the distance vectors and calculate again
             vector_distance_hull.clear();
             vector_distance_hull = distance_of_hull_to_point(hull, centroid);
             distance_vector_minimum_winning_coalition = nullptr;
@@ -283,14 +293,16 @@ int main(int argc, char *argv[])
     {
         cout << coalition[i] << ",";
     }
-    // Write to file
+    // Write to the out file
     results << "{\n\"time_lapsed\":" << fixed << time_taken << setprecision(15);
-    results<< ",\n\"fitness\":" << fixed << fitness_minimum_winning_coalition << setprecision(15)<<",\n\"coalition\":[";
+    results << ",\n\"fitness\":" << fixed << fitness_minimum_winning_coalition << setprecision(15) << ",\n\"coalition\":[";
     for (size_t j = 0; j < quorum; j++)
     {
-        results << coalition[j]<<",";
-        if (j < (quorum - 1)) results << coalition[j]<<",";
-        else results << coalition[j];
+        results << coalition[j] << ",";
+        if (j < (quorum - 1))
+            results << coalition[j] << ",";
+        else
+            results << coalition[j];
     }
     results << "]\n}";
     cout << endl;
