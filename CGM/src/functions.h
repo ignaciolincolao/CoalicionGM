@@ -9,7 +9,7 @@ double minimum_distance(double distances[], bool congressman_set[], int n)
             min = distances[v], min_index = v;
     return min_index;
 }
-// function to evaluate the solutions and return the fitness value
+// Function to evaluate the solutions and return the fitness value
 double evaluate_solution(int *position, double **mat, int length)
 {
     double sum = 0;
@@ -22,55 +22,6 @@ double evaluate_solution(int *position, double **mat, int length)
         }
     }
     return sum;
-}
-
-// Function to sort an array using bubble method
-void sort_bubble(int *array, int length)
-{
-    int temp = 0;
-    for (size_t i = 0; i < length; i++)
-    {
-        bool already_sorted = true;
-        for (size_t j = 0; j < length - i - 1; j++)
-        {
-            if (array[j] > array[j + 1])
-            {
-                temp = array[j];
-                array[j] = array[j + 1];
-                array[j + 1] = temp;
-                already_sorted = false;
-            }
-        }
-        if (already_sorted)
-            break;
-    }
-}
-// Function to sort an array using bubble method in the index
-void sort_bubble_index(int *index_array, double *arrayDist, int n, int quorum)
-{
-    int temp = 0;
-    // int order_index[n];
-    int *order_index = new int[n];
-    for (size_t i = 0; i < n; i++)
-        order_index[i] = i;
-
-    for (size_t i = 0; i < n; i++)
-    {
-        bool already_sorted = true;
-        for (size_t j = 0; j < n - i - 1; j++)
-        {
-            if (arrayDist[order_index[j]] > arrayDist[order_index[j + 1]])
-            {
-                temp = order_index[j];
-                order_index[j] = order_index[j + 1];
-                order_index[j + 1] = temp;
-                already_sorted = false;
-            }
-        }
-        if (already_sorted)
-            break;
-    }
-    memcpy(index_array, order_index, sizeof(int) * quorum);
 }
 // Function to create a initials solutions
 void minimum_distance_edge(int *index_array, double *arrayDist, int n, int quorum)
@@ -103,7 +54,6 @@ struct Point
 // Structure to store the distance respect to a centroid
 struct Distance_vector
 {
-    //double distance;
     double centroid_distance;
     int position;
 };
@@ -118,6 +68,12 @@ struct Distance_hull
 {
     double distance;
     int hull_index;
+};
+// Structure to store the initial solutions
+struct Solutions
+{
+    double fitness;
+    int* coalition_from_solution;
 };
 // Function to check the orientation
 double orientation(Point p, Point q, Point r)
@@ -176,19 +132,26 @@ vector<Point> convexHull(Point points[], int n)
     // Print Result
     return hull;
 }
-// Function boolean to check if a vector of distances is sorted
-bool vector_centroid_distance_sort(Distance_vector const& lvd, Distance_vector const& rvd) // not used
-{
-    return lvd.centroid_distance < rvd.centroid_distance;
-}
-// Function boolean to check if a improvement vector is sorted
+// Boolean functions to check if a vector or array is sorted
 bool vector_improvement_sort(Possible_improvement const &lvd, Possible_improvement const &rvd)
 {
     return lvd.fitness < rvd.fitness;
 }
-bool vector_distance_hull_sort(Distance_hull const &lvd, Distance_hull const &rvd) // not used
+bool vector_distance_hull_sort(Distance_hull const &lvd, Distance_hull const &rvd)
 {
     return lvd.distance > rvd.distance;
+}
+bool vector_distance_sort(Distance_vector const& lvd, Distance_vector const& rvd)
+{
+    return lvd.centroid_distance < rvd.centroid_distance;
+}
+bool vector_initial_solutions_sort(Solutions const& lvd, Solutions const& rvd)
+{
+    return lvd.fitness < rvd.fitness;
+}
+bool array_sort(int const& lvd, int const& rvd)
+{
+    return lvd<rvd;
 }
 // Function to calculate the centroid of a set of points
 void calculate_centroid(double *centroid, double **position_matrix, int *coalition, int quorum)
@@ -202,26 +165,6 @@ void calculate_centroid(double *centroid, double **position_matrix, int *coaliti
     }
     centroid[0] = centroid[0] / quorum;
     centroid[1] = centroid[1] / quorum;
-}
-
-// Function to do swap two elements
-void swap_double(Distance_vector *a, Distance_vector *b)
-{
-    Distance_vector temp = *a;
-    *a = *b;
-    *b = temp;
-}
-// Funtion to sort a vector using double swap
-void selection_sort_centroid_distance_vector(Distance_vector array[], int size)
-{
-    for (int step = 0; step < size - 1; step++)
-    {
-        int index_of_minimum = step;
-        for (int i = step + 1; i < size; i++)
-            if (array[i].centroid_distance < array[index_of_minimum].centroid_distance)
-                index_of_minimum = i;
-        swap_double(&array[index_of_minimum], &array[step]);
-    }
 }
 // Funtion to calculate the distance between a point and a convex hull
 vector<Distance_hull> distance_of_hull_to_point(vector<Point> hull, double *centroid)
@@ -239,18 +182,10 @@ vector<Distance_hull> distance_of_hull_to_point(vector<Point> hull, double *cent
 // Function to calculate the distance
 void distance_of_points_to_coalition(struct Distance_vector *distance_vector_minimum_winning_coalition, int *not_in_minimum_winning_coalition, int *coalition, double *centroid, double **position_matrix, int n, int quorum)
 {
-    //double sum = 0;
     for (int i = 0; i < (n - quorum); i++)
     {
-        /*for (size_t j = 0; j < quorum; j++)
-        {
-            sum = sum + eucledian_distance(position_matrix[not_in_minimum_winning_coalition[i]][0], position_matrix[not_in_minimum_winning_coalition[i]][1], position_matrix[coalition[j]][0], position_matrix[coalition[j]][1]);
-        }
-        distance_vector_minimum_winning_coalition[i].distance = sum;*/
         distance_vector_minimum_winning_coalition[i].position = not_in_minimum_winning_coalition[i];
         distance_vector_minimum_winning_coalition[i].centroid_distance = eucledian_distance(position_matrix[not_in_minimum_winning_coalition[i]][0], position_matrix[not_in_minimum_winning_coalition[i]][1], centroid[0], centroid[1]);
-        //sum = 0;
     }
-    //Quitar este ordenamiento
-    selection_sort_centroid_distance_vector(distance_vector_minimum_winning_coalition, (n - quorum));
+    sort(distance_vector_minimum_winning_coalition, distance_vector_minimum_winning_coalition + (n - quorum), &vector_distance_sort);
 }

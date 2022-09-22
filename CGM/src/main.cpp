@@ -71,24 +71,25 @@ int main(int argc, char *argv[])
     {
         congressmen[i] = (int *)malloc(quorum * sizeof(int));
     }
-    // Fitness initialization
-    double *initial_fitness = (double *)malloc(n * sizeof(double));
-    int *initial_fitness_index = (int *)malloc(n * sizeof(int));
+    // Initialization of the solutions
+    vector<Solutions> initial_solutions;
     // Creation of initial solutions
     for (int j = 0; j < n; j++)
     {
         minimum_distance_edge(congressmen[j], distance_matrix[j], n, quorum);
-        sort_bubble(congressmen[j], quorum);
-        initial_fitness[j] = evaluate_solution(congressmen[j], distance_matrix, quorum);
+        sort(congressmen[j], congressmen[j] + quorum, &array_sort);
+        initial_solutions.push_back(Solutions());
+        initial_solutions[j].coalition_from_solution = congressmen[j];
+        initial_solutions[j].fitness = evaluate_solution(congressmen[j], distance_matrix, quorum);
     }
     // Sort the solutions
-    sort_bubble_index(initial_fitness_index, initial_fitness, n, n);
+    sort(initial_solutions.begin(), initial_solutions.end(), &vector_initial_solutions_sort);
     // Create the variables for the best solution
     int *coalition = (int *)malloc(quorum * sizeof(int));
     double fitness_minimum_winning_coalition;
     // bring out the best
-    memcpy(coalition, congressmen[initial_fitness_index[0]], sizeof(int) * quorum);
-    fitness_minimum_winning_coalition = initial_fitness[initial_fitness_index[0]];
+    memcpy(coalition, initial_solutions[0].coalition_from_solution, sizeof(int) * quorum);
+    fitness_minimum_winning_coalition = initial_solutions[0].fitness;
     // Pointer initialization
     double *centroid = (double *)malloc(2 * sizeof(double));
     bool *grid_minimum_winning_coalition = (bool *)malloc(n * sizeof(bool));
@@ -108,7 +109,6 @@ int main(int argc, char *argv[])
     int counter_posibility_of_improvement;
     bool improvement = false;
     int number_of_points = 0;
-    vector<int> points_in_limit;
     // Point Structure Initialization
     struct Point *Pts = (Point *)malloc(sizeof(struct Point) * quorum);
     // Calculate the centroid of the best solution
@@ -148,7 +148,6 @@ int main(int argc, char *argv[])
     distance_of_points_to_coalition(distance_vector_minimum_winning_coalition, not_in_minimum_winning_coalition, coalition, centroid, position_matrix, n, quorum);
     while (possibility_of_improvement)
     {
-        points_in_limit.clear();
         delta2 = delta2 + 1;
         // Calculate the limit
         limit = vector_distance_hull[0].distance * alpha * pow(delta, delta2);
@@ -173,9 +172,8 @@ int main(int argc, char *argv[])
                 // Obtain the possible winning coalition
                 memcpy(possible_winning_coalition, coalition, sizeof(int) * quorum);
                 possible_winning_coalition[hull[vector_distance_hull[i].hull_index].index] = distance_vector_minimum_winning_coalition[j].position;
-                
                 // sort the possible winning coalition
-                sort_bubble(possible_winning_coalition, quorum);
+                sort(possible_winning_coalition, possible_winning_coalition + quorum,&array_sort);
                 // Calculate the fitness of the possible winning coalition
                 new_fitness = evaluate_solution(possible_winning_coalition, distance_matrix, quorum);
                 if (new_fitness < fitness_minimum_winning_coalition)
@@ -217,7 +215,7 @@ int main(int argc, char *argv[])
                 // A congressman from the convex hull is changed for one that is within the vector of possible improvement
                 coalition[hull[vector_distance_hull[i].hull_index].index] = distance_vector_minimum_winning_coalition[improvement_vector[0].index].position;
                 // sort the coalition
-                sort_bubble(coalition, quorum);
+                sort(coalition, coalition + quorum,&array_sort);
                 // Calculate the new fitness
                 fitness_minimum_winning_coalition = evaluate_solution(coalition, distance_matrix, quorum);
                 // We get out of the loop
@@ -226,10 +224,7 @@ int main(int argc, char *argv[])
             }
         }
         // if the fitness does not change, we get out of the loop
-        if (fitness_minimum_winning_coalition == fitness_copy)
-        {
-            possibility_of_improvement = false;
-        }
+        if (fitness_minimum_winning_coalition == fitness_copy) possibility_of_improvement = false;
         else
         {
             // save the fitness
