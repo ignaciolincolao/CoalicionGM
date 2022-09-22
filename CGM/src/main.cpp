@@ -12,7 +12,7 @@ using namespace std;
 using json = nlohmann::json;
 
 // Default params
-double alpha = 0.99;
+double alpha = 1.1; //0.99
 double delta = 0.9; // 0.95 its a limit
 double delta2 = -1;
 string votes = "votes.json";
@@ -108,6 +108,7 @@ int main(int argc, char *argv[])
     int counter_posibility_of_improvement;
     bool improvement = false;
     int number_of_points = 0;
+    vector<int> points_in_limit;
     // Point Structure Initialization
     struct Point *Pts = (Point *)malloc(sizeof(struct Point) * quorum);
     // Calculate the centroid of the best solution
@@ -147,13 +148,19 @@ int main(int argc, char *argv[])
     distance_of_points_to_coalition(distance_vector_minimum_winning_coalition, not_in_minimum_winning_coalition, coalition, centroid, position_matrix, n, quorum);
     while (possibility_of_improvement)
     {
+        points_in_limit.clear();
         delta2 = delta2 + 1;
         // Calculate the limit
         limit = vector_distance_hull[0].distance * alpha * pow(delta, delta2);
         // Calculate the number of points that are within the limit
         for (size_t i = 0; i < (n - quorum); i++)
+        {
             if (distance_vector_minimum_winning_coalition[i].centroid_distance < limit)
+            {
                 number_of_points++;
+            }
+            else break;
+        }
         // Reset the improvement counter
         counter_posibility_of_improvement = 0;
 
@@ -161,11 +168,12 @@ int main(int argc, char *argv[])
         {
             // Reset the improvement vector
             improvement_vector.clear();
-            for (size_t j = 0; j < (number_of_points); j++)
+            for (size_t j = 0; j < number_of_points; j++)
             {
                 // Obtain the possible winning coalition
                 memcpy(possible_winning_coalition, coalition, sizeof(int) * quorum);
                 possible_winning_coalition[hull[vector_distance_hull[i].hull_index].index] = distance_vector_minimum_winning_coalition[j].position;
+                //cout << "points: " << points_in_limit[j] << endl;
                 // sort the possible winning coalition
                 sort_bubble(possible_winning_coalition, quorum);
                 // Calculate the fitness of the possible winning coalition
