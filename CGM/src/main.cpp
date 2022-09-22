@@ -161,11 +161,11 @@ int main(int argc, char *argv[])
             }
             else break;
         }
-        // Reset the improvement counter
-        counter_posibility_of_improvement = 0;
 
         for (size_t i = 0; i < hull.size(); i++)
         {
+            // Reset the improvement counter
+            counter_posibility_of_improvement = 0;
             // Reset the improvement vector
             improvement_vector.clear();
             for (size_t j = 0; j < number_of_points; j++)
@@ -173,7 +173,7 @@ int main(int argc, char *argv[])
                 // Obtain the possible winning coalition
                 memcpy(possible_winning_coalition, coalition, sizeof(int) * quorum);
                 possible_winning_coalition[hull[vector_distance_hull[i].hull_index].index] = distance_vector_minimum_winning_coalition[j].position;
-                //cout << "points: " << points_in_limit[j] << endl;
+                
                 // sort the possible winning coalition
                 sort_bubble(possible_winning_coalition, quorum);
                 // Calculate the fitness of the possible winning coalition
@@ -182,16 +182,16 @@ int main(int argc, char *argv[])
                 {
                     // prints
                     cout << endl;
-                    cout << "Cantidad de puntos tomados:" << number_of_points << endl;
-                    cout << "Fitness Anterior:" << fixed << fitness_minimum_winning_coalition << setprecision(9) << endl;
-                    cout << "Fitness Recalculado:" << fixed << new_fitness << setprecision(9) << endl;
-                    cout << "Coalicion Anterior:";
+                    cout << "Number of points within the limit:" << number_of_points << endl;
+                    cout << "Previous fitness:" << fixed << fitness_minimum_winning_coalition << setprecision(9) << endl;
+                    cout << "Recalculated fitness:" << fixed << new_fitness << setprecision(9) << endl;
+                    cout << "Previous coalition:" << endl;
                     for (size_t i = 0; i < quorum; i++)
                     {
                         cout << coalition[i] << ",";
                     }
                     cout << endl;
-                    cout << "Coalicion Recalculado:";
+                    cout << "Recalculate coalition:" << endl;
                     for (size_t i = 0; i < quorum; i++)
                     {
                         cout << possible_winning_coalition[i] << ",";
@@ -205,12 +205,15 @@ int main(int argc, char *argv[])
                     improvement_vector[counter_posibility_of_improvement].index = j;
                     fitness_minimum_winning_coalition = new_fitness;
                     improvement = true;
+                    counter_posibility_of_improvement++;
                 }
             }
             // sort the improvement vector
             sort(improvement_vector.begin(), improvement_vector.end(), &vector_improvement_sort);
             if (improvement)
             {
+                cout << "Worst of hull: " << i + 1 << endl;
+                cout << "Best of out: " << improvement_vector[0].index + 1 << endl;
                 // A congressman from the convex hull is changed for one that is within the vector of possible improvement
                 coalition[hull[vector_distance_hull[i].hull_index].index] = distance_vector_minimum_winning_coalition[improvement_vector[0].index].position;
                 // sort the coalition
