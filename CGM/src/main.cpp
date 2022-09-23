@@ -151,6 +151,7 @@ int main(int argc, char *argv[])
         delta2 = delta2 + 1;
         // Calculate the limit
         limit = vector_distance_hull[0].distance * alpha * pow(delta, delta2);
+        number_of_points = 0;
         // Calculate the number of points that are within the limit
         for (size_t i = 0; i < (n - quorum); i++)
         {
