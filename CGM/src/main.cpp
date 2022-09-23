@@ -99,6 +99,7 @@ int main(int argc, char *argv[])
     struct Distance_vector *distance_vector_minimum_winning_coalition = (Distance_vector *)malloc(sizeof(struct Distance_vector) * (n - quorum));
     vector<Possible_improvement> improvement_vector;
     vector<Distance_hull> vector_distance_hull;
+    vector<Point> hull;
     // Variable initialization
     bool possibility_of_improvement = true;
     int counter;
@@ -124,7 +125,7 @@ int main(int argc, char *argv[])
         Pts[i].index = i;
     }
     // Calculate the convex hull of the best solution
-    auto hull = convexHull(Pts, quorum);
+    hull=convexHull(Pts, quorum);
     // Calculate the grid of the voting
     for (size_t i = 0; i < n; i++)
     {
@@ -253,7 +254,8 @@ int main(int argc, char *argv[])
                 Pts[i].index = i;
             }
             // Calculate the convex hull
-            auto hull = convexHull(Pts, quorum);
+            hull.clear();
+            hull = convexHull(Pts, quorum);
             // Calculate the grid of the voting
             for (size_t i = 0; i < n; i++)
             {
