@@ -73,7 +73,7 @@ struct Distance_hull
 struct Solutions
 {
     double fitness;
-    int* coalition_from_solution;
+    int *coalition_from_solution;
 };
 // Function to check the orientation
 double orientation(Point p, Point q, Point r)
@@ -87,6 +87,7 @@ double orientation(Point p, Point q, Point r)
 }
 
 // Prints convex hull of a set of n points.
+// Source by GeeksforGeeks. (2022, August 5). Convex Hull | Set 1 (Jarvis’s Algorithm or Wrapping). Retrieved September 09, 2022, from https://www.geeksforgeeks.org/convex-hull-set-1-jarviss-algorithm-or-wrapping/
 vector<Point> convexHull(Point points[], int n)
 {
     // There must be at least 3 points
@@ -141,17 +142,17 @@ bool vector_distance_hull_sort(Distance_hull const &lvd, Distance_hull const &rv
 {
     return lvd.distance > rvd.distance;
 }
-bool vector_distance_sort(Distance_vector const& lvd, Distance_vector const& rvd)
+bool vector_distance_sort(Distance_vector const &lvd, Distance_vector const &rvd)
 {
     return lvd.centroid_distance < rvd.centroid_distance;
 }
-bool vector_initial_solutions_sort(Solutions const& lvd, Solutions const& rvd)
+bool vector_initial_solutions_sort(Solutions const &lvd, Solutions const &rvd)
 {
     return lvd.fitness < rvd.fitness;
 }
-bool array_sort(int const& lvd, int const& rvd)
+bool array_sort(int const &lvd, int const &rvd)
 {
-    return lvd<rvd;
+    return lvd < rvd;
 }
 // Function to calculate the centroid of a set of points
 void calculate_centroid(double *centroid, double **position_matrix, int *coalition, int quorum)
