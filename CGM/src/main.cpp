@@ -301,7 +301,6 @@ int main(int argc, char *argv[])
     results << ",\n\"fitness\":" << fixed << fitness_minimum_winning_coalition << setprecision(15) << ",\n\"coalition\":[";
     for (size_t j = 0; j < quorum; j++)
     {
-        results << coalition[j] << ",";
         if (j < (quorum - 1))
             results << coalition[j] << ",";
         else
