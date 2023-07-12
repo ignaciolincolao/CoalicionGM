@@ -1,18 +1,19 @@
 #include <vector>
+#include <cfloat>
 using namespace std;
 // Function to search the minimum distance between a point that does not belong to the coalition and a array of distances and return the index of this
-double minimum_distance(double distances[], bool congressman_set[], int n)
+float minimum_distance(float distances[], bool congressman_set[], int n)
 {
-    double min = DBL_MAX, min_index;
+    float min = DBL_MAX, min_index;
     for (int v = 0; v < n; v++)
         if (congressman_set[v] == false && distances[v] < min)
             min = distances[v], min_index = v;
     return min_index;
 }
 // Function to evaluate the solutions and return the fitness value
-double evaluate_solution(int *position, double **mat, int length)
+float evaluate_solution(int *position, float **mat, int length)
 {
-    double sum = 0;
+    float sum = 0;
     for (size_t i = 0; i <= (length - 2); i++)
     {
 
@@ -24,7 +25,7 @@ double evaluate_solution(int *position, double **mat, int length)
     return sum;
 }
 // Function to create a initials solutions
-void minimum_distance_edge(int *index_array, double *arrayDist, int n, int quorum)
+void minimum_distance_edge(int *index_array, float *arrayDist, int n, int quorum)
 {
     bool *congressman_set = new bool[n];
     for (size_t i = 0; i < n; i++)
@@ -39,46 +40,46 @@ void minimum_distance_edge(int *index_array, double *arrayDist, int n, int quoru
     }
 }
 // Function to calculate the distance between two points
-double eucledian_distance(double x1, double y1, double x2, double y2)
+float eucledian_distance(float x1, float y1, float x2, float y2)
 {
-    double calculation = pow(pow((x2 - x1), 2) + pow((y2 - y1), 2), 1 / (double)2);
+    float calculation = pow(pow((x2 - x1), 2) + pow((y2 - y1), 2), 1 / (float)2);
     return calculation;
 }
 // Structure to store the information of the points
 struct Point
 {
-    double x, y;
+    float x, y;
     int position;
     int index;
 };
 // Structure to store the distance respect to a centroid
 struct Distance_vector
 {
-    double centroid_distance;
+    float centroid_distance;
     int position;
 };
 // Structure to store the information of the points are possible to be selected to change
 struct Possible_improvement
 {
-    double fitness;
+    float fitness;
     int index;
 };
 // Structure to store the information of the convex hull
 struct Distance_hull
 {
-    double distance;
+    float distance;
     int hull_index;
 };
 // Structure to store the initial solutions
 struct Solutions
 {
-    double fitness;
+    float fitness;
     int *coalition_from_solution;
 };
 // Function to check the orientation
-double orientation(Point p, Point q, Point r)
+float orientation(Point p, Point q, Point r)
 {
-    double value = (q.y - p.y) * (r.x - q.x) -
+    float value = (q.y - p.y) * (r.x - q.x) -
                    (q.x - p.x) * (r.y - q.y);
 
     if (value == 0)
@@ -155,7 +156,7 @@ bool array_sort(int const &lvd, int const &rvd)
     return lvd < rvd;
 }
 // Function to calculate the centroid of a set of points
-void calculate_centroid(double *centroid, double **position_matrix, int *coalition, int quorum)
+void calculate_centroid(float *centroid, float **position_matrix, int *coalition, int quorum)
 {
     centroid[0] = 0;
     centroid[1] = 0;
@@ -168,7 +169,7 @@ void calculate_centroid(double *centroid, double **position_matrix, int *coaliti
     centroid[1] = centroid[1] / quorum;
 }
 // Funtion to calculate the distance between a point and a convex hull
-vector<Distance_hull> distance_of_hull_to_point(vector<Point> hull, double *centroid)
+vector<Distance_hull> distance_of_hull_to_point(vector<Point> hull, float *centroid)
 {
     vector<Distance_hull> vector_distance_hull;
     for (size_t i = 0; i < hull.size(); i++)
@@ -181,7 +182,7 @@ vector<Distance_hull> distance_of_hull_to_point(vector<Point> hull, double *cent
     return vector_distance_hull;
 }
 // Function to calculate the distance
-void distance_of_points_to_coalition(struct Distance_vector *distance_vector_minimum_winning_coalition, int *not_in_minimum_winning_coalition, int *coalition, double *centroid, double **position_matrix, int n, int quorum)
+void distance_of_points_to_coalition(struct Distance_vector *distance_vector_minimum_winning_coalition, int *not_in_minimum_winning_coalition, int *coalition, float *centroid, float **position_matrix, int n, int quorum)
 {
     for (int i = 0; i < (n - quorum); i++)
     {

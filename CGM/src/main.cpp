@@ -12,9 +12,9 @@ using namespace std;
 using json = nlohmann::json;
 
 // Default params
-double alpha = 1.1; // 0.99
-double delta = 0.9; // 0.95 its a limit
-double delta2 = -1;
+float alpha = 1.1; // 0.99
+float delta = 0.9; // 0.95 its a limit
+float delta2 = -1;
 string votes = "votes.json";
 
 int main(int argc, char *argv[])
@@ -27,31 +27,32 @@ int main(int argc, char *argv[])
         delta2 = stoi(argv[3]);
         votes = stoi(argv[4]);
     }
-    // Load voting file
-    ifstream file(votes);
-    json data = json::parse(file);
-
     // Create output file
     ofstream results;
     results.open("results.json");
 
+    
+    // Load voting file
+    ifstream file(votes);
+    json data = json::parse(file);
     // Number of congressmen
     int n = data["rollcalls"][0]["votes"].size();
     // Creating the distance matrix
-    double **distance_matrix = (double **)malloc(n * sizeof(double *));
+    float **distance_matrix = (float **)malloc(n * sizeof(float *));
     for (size_t i = 0; i < n; i++)
     {
-        distance_matrix[i] = (double *)malloc(n * sizeof(double));
+        distance_matrix[i] = (float *)malloc(n * sizeof(float));
     }
     // Creation and filling of position matrix
-    double **position_matrix = (double **)malloc(n * sizeof(double *));
+    float **position_matrix = (float **)malloc(n * sizeof(float *));
     for (size_t i = 0; i < n; i++)
     {
-        position_matrix[i] = (double *)malloc(2 * sizeof(double));
+        position_matrix[i] = (float *)malloc(2 * sizeof(float));
         position_matrix[i][0] = data["rollcalls"][0]["votes"][i]["x"];
         position_matrix[i][1] = data["rollcalls"][0]["votes"][i]["y"];
     }
     // Filling the distance matrix
+    auto initial_time = chrono::high_resolution_clock::now();
     for (size_t i = 0; i < n; i++)
     {
         for (size_t j = 0; j < n; j++)
@@ -60,11 +61,62 @@ int main(int argc, char *argv[])
         }
     }
 
+    
+
+    /*
+    // Load voting file
+    int n = 36;
+    float new_data[n][2];
+    //std::ifstream file("Dataset_98_50_48_seed-7.csv");
+    std::ifstream file("36/votos/parte_1/points_36_1689098041.txt");
+    //std::ifstream file("points_40.txt");
+    std::string   line;
+    int count = 0;
+    while(std::getline(file, line) && count < n)
+    {
+        std::stringstream   linestream(line);
+        std::string         data;
+        float                 val1;
+        float                 val2;
+        char                  coma;
+        linestream >> val1 >> coma >> val2;
+        new_data[count][0] = val1;
+        new_data[count][1] = val2;
+        cout << new_data[count][0] << "-"<< new_data[count][1] << endl;
+        count++;
+    }
+    // Creating the distance matrix
+    float **distance_matrix = (float **)malloc(n * sizeof(float *));
+    for (size_t i = 0; i < n; i++)
+    {
+        distance_matrix[i] = (float *)malloc(n * sizeof(float));
+    }
+    // Creation and filling of position matrix
+    float **position_matrix = (float **)malloc(n * sizeof(float *));
+    for (size_t i = 0; i < n; i++)
+    {
+        position_matrix[i] = (float *)malloc(2 * sizeof(float));
+        position_matrix[i][0] = new_data[i][0];
+        position_matrix[i][1] = new_data[i][1];
+    }
+    // Filling the distance matrix
+
+    for (size_t i = 0; i < n; i++)
+    {
+        for (size_t j = 0; j < n; j++)
+        {
+            distance_matrix[i][j] = eucledian_distance(position_matrix[i][0], position_matrix[i][1], position_matrix[j][0], position_matrix[j][1]);
+        }
+    }
+    */
+
+
+
     // Quorum initialization
     int quorum = trunc(n / 2) + 1;
 
     // Calculate start time
-    auto initial_time = chrono::high_resolution_clock::now();
+    
     // Congressmen matrix Initialization
     int **congressmen = (int **)malloc(n * sizeof(int *));
     for (size_t i = 0; i < n; i++)
@@ -86,12 +138,12 @@ int main(int argc, char *argv[])
     sort(initial_solutions.begin(), initial_solutions.end(), &vector_initial_solutions_sort);
     // Create the variables for the best solution
     int *coalition = (int *)malloc(quorum * sizeof(int));
-    double fitness_minimum_winning_coalition;
+    float fitness_minimum_winning_coalition;
     // bring out the best
     memcpy(coalition, initial_solutions[0].coalition_from_solution, sizeof(int) * quorum);
     fitness_minimum_winning_coalition = initial_solutions[0].fitness;
     // Pointer initialization
-    double *centroid = (double *)malloc(2 * sizeof(double));
+    float *centroid = (float *)malloc(2 * sizeof(float));
     bool *grid_minimum_winning_coalition = (bool *)malloc(n * sizeof(bool));
     int *not_in_minimum_winning_coalition = (int *)malloc((n - quorum) * sizeof(int));
     int *possible_winning_coalition = (int *)malloc(quorum * sizeof(int));
@@ -103,10 +155,10 @@ int main(int argc, char *argv[])
     // Variable initialization
     bool possibility_of_improvement = true;
     int counter;
-    double sum = 0;
-    double new_fitness;
-    double fitness_copy;
-    double limit;
+    float sum = 0;
+    float new_fitness;
+    float fitness_copy;
+    float limit;
     int counter_posibility_of_improvement;
     bool improvement = false;
     int number_of_points = 0;
@@ -285,7 +337,7 @@ int main(int argc, char *argv[])
     }
     // Calculate the time of the algorithm
     auto final_time = chrono::high_resolution_clock::now();
-    double time_taken = chrono::duration_cast<chrono::nanoseconds>(final_time - initial_time).count();
+    float time_taken = chrono::duration_cast<chrono::nanoseconds>(final_time - initial_time).count();
     time_taken *= 1e-9;
     // Print the results
     cout << "Finished algorithm - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -" << endl;
